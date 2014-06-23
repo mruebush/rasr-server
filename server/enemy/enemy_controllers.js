@@ -28,6 +28,7 @@ module.exports = {
       return screenToAdd.saveAsync();
     }).then(function(){
       return new Promise(function(onResolved, onRejected) {
+        console.log(screenToAdd._id, 'new promise returning')
         onResolved(screenToAdd._id);
       });
     });

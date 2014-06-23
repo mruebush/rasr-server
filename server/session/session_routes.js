@@ -1,4 +1,4 @@
-var controller = require('./screen_controllers.js');
+var controller = require('./session_controllers.js');
 
 module.exports = function(router) {
   router.route('/action')

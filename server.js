@@ -49,9 +49,14 @@
  *
 */
 
-var app   = require('./main/app.js'),
+var app   = require('./server/main/app.js'),
     port  = app.get('port'),
     log   = 'Listening on ' + app.get('base url') + ':' + port;
 
-app.listen(port);
-console.log(log);
+var server = require('http').createServer(app);
+server.listen(port, function(){
+  console.log(log);
+});
+
+// boostrap socket
+require('./server/socket/socket').init(server);

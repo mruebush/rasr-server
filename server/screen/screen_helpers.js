@@ -1,5 +1,6 @@
+var Promise = require('bluebird');
 
-var helpers = 
+var helpers = {
 
   oppositeDirections: {
     left: 'right',
@@ -17,9 +18,11 @@ var helpers =
 
   placementHelper: function(fromScreenId, toScreenId, doneDir, toGoDir) {
     // will have to circle two ways around toScreenId
-    var toGoOppositeDirection = oppositeDirections[toGoDir];
+    var toGoOppositeDirection = helpers.oppositeDirections[toGoDir];
     // boolean to decrease number of calls to database
     var backsideConnection = false
+
+    console.log(fromScreenId, toScreenId, doneDir, toGoDir, 'placementHelper)');
 
     return helpers.peripheralRefs(fromScreenId, toScreenId, doneDir, toGoDir) // should return (connectionScreenId, toScreenId)
     .then(function(peripheralScreenId) {
@@ -91,7 +94,7 @@ var helpers =
       }
     })
     .then(function(screened) {
-      direction = oppositeDirections[direction];
+      direction = helpers.oppositeDirections[direction];
       return Screen.findByIdAsync(toScreenId)
     })
     .then(function(foundScreen) {
@@ -108,12 +111,9 @@ var helpers =
         onResolved(toScreenId, fromScreenId);
       });
     })
-    .catch(function(err) {
-      helpers.handleError(err, res);
-    });
   },
 
-  helpers.handleError = function(err, res) {
+  handleError: function(err, res) {
     console.log(err);
     res.send(500, err);
   }

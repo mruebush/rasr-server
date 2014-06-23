@@ -1,9 +1,9 @@
 var Promise = require('bluebird');
-var sampleScreens = require('../util/sampleScreens')();
-var enemyHandler = require('../controllers/enemies')
+var sampleScreens = require('../buildWorld/sampleScreens');
+var enemyHandler = require('../enemy/enemy_controllers')
 var mongoose = require('mongoose');
 var Screen = mongoose.model('Screen');
-var helpers = require('./helpers');
+var helpers = require('./screen_helpers');
 
 Promise.promisifyAll(Screen);
 Promise.promisifyAll(mongoose);
@@ -16,7 +16,7 @@ module.exports = {
     Screen.findById(currentObjectId).populate(direction+'Screen')
     .exec(function(err, currentScreen) {
       if (err) {
-        handleError(err, res);
+        helpers.handleError(err, res);
       } else {
         var toSend = currentScreen[direction+'Screen'];
         if (toSend) {
@@ -52,7 +52,7 @@ module.exports = {
     })
     .catch(function(err) {
       console.log('world probably created already');
-      handleError(err, res);
+      helpers.handleError(err, res);
     });
   },
 
@@ -64,7 +64,7 @@ module.exports = {
     })
     .catch(function(err) {
       console.log('didnt find it', err);
-      handleError(err, res);
+      helpers.handleError(err, res);
     });
   },
 
@@ -76,7 +76,7 @@ module.exports = {
       res.send({success: true, deletedScreen: deletedScreen});
     })
     .catch(function(err) {
-      handleError(err, res);
+      helpers.handleError(err, res);
     })
   },
 
@@ -98,7 +98,7 @@ module.exports = {
     });
   },
 
-  saveTileSet = function(req, res) {
+  saveTileSet: function(req, res) {
     // var data = req.body.data;
     var filePath = path.join(__dirname, 'app/assets/tilemaps/tiles/');
     req.pipe(filePath);

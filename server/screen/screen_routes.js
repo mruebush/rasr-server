@@ -1,6 +1,6 @@
 "use strict";
 
-var controller = require('./screen_controllers.js');
+var controller = require('./screen_controllers');
 
 module.exports = function(router) {
 
@@ -10,7 +10,7 @@ module.exports = function(router) {
     .delete(controller.deleteScreen);
 
   // Map editor API route
-  router.route('/save/:screenId'
+  router.route('/save/:screenId')
     .put(controller.saveScreen);
   
   // Map editor new tileset route

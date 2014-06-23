@@ -7,7 +7,6 @@ var bodyParser    = require('body-parser'),
     methodOverride = require('method-override'),
     cookieParser = require('cookie-parser'),
     session = require('express-session'),
-    passport = require('passport'),
     mongoStore = require('connect-mongo')(session),
     cors = require('cors');
 
@@ -16,15 +15,26 @@ var bodyParser    = require('body-parser'),
     // path = require('path'),
     // config = require('./config'),
     // errorHandler = require('errorhandler'),
-
-
-mongoose.connect(process.env.DB_URL || 'mongodb://localhost/myApp');
 /*
  * Include all global env variables here.
 */
 module.exports = exports = function (app, express, routers) {
   // var env = app.get('env');
 
+  var db_url = process.env.DB_URL || 'mongodb://localhost/myApp';
+  app.set('DB_URL', db_url);
+
+  // connect to MongoDB
+  mongoose.connect(app.get('DB_URL'));
+
+  // Bootstrap and promisify models
+  var Screen = require('../screen/screen_model');
+  var User = require('../user/user_model');
+  var Player = require('../player/player_model');
+  var Enemy = require('../enemy/enemy_model');
+    // Passport Configuration
+  var passport = require('../session/passport')
+    
   // if ('development' === env) {
   //   app.use(require('connect-livereload')());
 
@@ -53,7 +63,7 @@ module.exports = exports = function (app, express, routers) {
   app.use(session({
     secret: 'angular-fullstack secret',
     store: new mongoStore({
-      url: config.mongo.uri,
+      url: app.get('DB_URL'),
       collection: 'sessions'
     }, function () {
       console.log('db connection open');
@@ -82,13 +92,12 @@ module.exports = exports = function (app, express, routers) {
   });
 
 
-  app.use('/login', routers.LoginRouter);
+  app.use('/login', routers.SessionRouter);
 
-  app.use('/api/screen', routers.OpportunityRouter);
-  app.use('/api/buildWorld', routers.TagRouter);
+  app.use('/api/screen', routers.ScreenRouter);
+  app.use('/api/buildWorld', routers.BuildWorldRouter);
   app.use('/api/users' , routers.UserRouter);
   app.use('/api/player' , routers.PlayerRouter);
-  app.use('/api/session' , routers.SessionRouter);
 
   app.use(middle.logError);
   app.use(middle.handleError);

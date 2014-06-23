@@ -6,8 +6,6 @@
 
 module.exports = exports = {
 
-  'use strict';
-
   /**
    * Custom middleware used by the application
    */

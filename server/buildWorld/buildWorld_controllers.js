@@ -1,13 +1,13 @@
 'use strict';
 
+var mongoose = require('mongoose');
 var Screen = mongoose.model('Screen');
 var Enemy = mongoose.model('Enemy');
 var Promise = require('bluebird');
-var sampleScreens = require('./sampleScreens')();
+var sampleScreens = require('./sampleScreens');
 var sampleEnemies = require('./sampleEnemies');
-var mongoose = require('mongoose');
 
-var screenHandler = require('../screen/screen_controllers.js')
+var screenHandler = require('../screen/screen_helpers.js')
 var enemyHandler = require('../enemy/enemy_controllers.js')
 
 Promise.promisifyAll(Enemy);
@@ -30,7 +30,7 @@ var methods = {
     var screen9 = sampleScreens.screen9;
 
     var enemy1 = sampleEnemies.enemy1;
-    var 
+    var enemyOnScreen1 = sampleEnemies.enemyOnScreen1;
 
     return Enemy.removeAsync()
     .then(function() {
@@ -44,13 +44,13 @@ var methods = {
     })
     .then(function(createdScreen) {
       console.log(createdScreen._id)
-      return enemyHandler.populateEnemy(sampleEnemies.enemyOnScreen1, createdScreen._id)
+      return enemyHandler.populateEnemy(enemyOnScreen1, createdScreen._id)
     })
     .then(function(createdScreenId) {
       return methods.createWorld('right', screen2, createdScreenId, req, res);
     })
     .then(function(createdScreenId) {
-      console.log(createdScreenId);
+      console.log(createdScreenId, 'line 53 - DOWN');
       return methods.createWorld('down', screen3, createdScreenId, req, res);
     })
     .then(function(createdScreenId) {
@@ -85,7 +85,7 @@ var methods = {
     })
   },
 
-  createWorld: function(direction, newScreen, currentObjectId, req, res) {
+  createWorld: function(direction, newScreen, currentScreenId, req, res) {
     var adjacentDirections = {
       'up': 'right',
       'right': 'down',
@@ -93,17 +93,19 @@ var methods = {
       'left': 'up'
     }
 
+    var enemyOnScreen1 = sampleEnemies.enemyOnScreen1;
+
     // create new screen
     return Screen.createAsync(newScreen)
     .then(function(createdScreen) {
-      return enemyHandler.populateEnemy(sampleEnemies.enemyOnScreen1, createdScreen._id)
+      return enemyHandler.populateEnemy(enemyOnScreen1, createdScreen._id)
     })
     .then(function(createdScreenId) {
-      return screenHandler.addDirectionReference(direction, currentObjectId, createdScreenId)
+      return screenHandler.addDirectionReference(direction, currentScreenId, createdScreenId)
     })
     // go around the horn, adding all necessary references
     .then(function(createdScreenId) {
-      return screenHandler.placementHelper(currentObjectId, createdScreenId, direction, adjacentDirections[direction]);
+      return screenHandler.placementHelper(currentScreenId, createdScreenId, direction, adjacentDirections[direction]);
     })
     .catch(function(err) {
       handleError(err, res);
@@ -115,6 +117,5 @@ var handleError = function(err, res) {
   console.log(err);
   res.send(err);
 };
-
 
 module.exports = methods

@@ -8,6 +8,7 @@ var ScreenRouter       = express.Router();
 var BuildWorldRouter      = express.Router();
 var UserRouter        = express.Router();
 var PlayerRouter        = express.Router();
+var SessionRouter = express.Router();
 
 var routers      = {};
 
@@ -15,13 +16,14 @@ routers.ScreenRouter       = ScreenRouter;
 routers.BuildWorldRouter      = BuildWorldRouter;
 routers.UserRouter        = UserRouter;
 routers.PlayerRouter        = PlayerRouter;
+routers.SessionRouter        = SessionRouter;
 
 require('./config.js')(app, express, routers);
 
-require('../screen/screen_routes.js')(ScreenRouter);
-require('../buildWorld/buildWorld_routes.j')(BuildWorldRouter);
-require('../user/user_routes.js')(UserRouter);
-require('../user/player_routes.js')(PlayerRouter);
-require('../user/session_routes.js')(SessionRouter);
+require('../screen/screen_routes')(ScreenRouter);
+require('../buildWorld/buildWorld_routes')(BuildWorldRouter);
+require('../user/user_routes')(UserRouter);
+require('../player/player_routes')(PlayerRouter);
+require('../session/session_routes')(SessionRouter);
 
 module.exports = exports = app;

@@ -74,6 +74,7 @@
     "node": ">=0.10.0"
   },
   "scripts": {
-    "test": "grunt test"
-  }
+    "test": "jasmine-node spec/ --captureExceptions --autotest --color --watch server/ spec/",
+    "server": "node server.js"
+  },
 }
