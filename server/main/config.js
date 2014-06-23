@@ -99,6 +99,12 @@ module.exports = exports = function (app, express, routers) {
   app.use('/api/users' , routers.UserRouter);
   app.use('/api/player' , routers.PlayerRouter);
 
+  //All undefined api routes should return a 404
+  app.route('/api/*')
+    .get(function(req, res) {
+      res.send(404);
+    });
+
   app.use(middle.logError);
   app.use(middle.handleError);
 
