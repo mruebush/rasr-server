@@ -84,14 +84,12 @@ module.exports = exports = function (app, express, routers) {
 
   app.use('/login', routers.LoginRouter);
 
-  // app.use('/public', routers.PublicRouter);
   app.use('/api/screen', routers.OpportunityRouter);
   app.use('/api/buildWorld', routers.TagRouter);
-  // app.use('/api/users' , routers.UserRouter);
-  // app.use('/api/matches', routers.MatchRouter);
-  // app.use('/api/companies', routers.CompanyRouter);
-  // app.use('/api/categories', routers.CategoryRouter);
-  // app.use('/api/invite', routers.InviteRouter);
+  app.use('/api/users' , routers.UserRouter);
+  app.use('/api/player' , routers.PlayerRouter);
+  app.use('/api/session' , routers.SessionRouter);
+
   app.use(middle.logError);
   app.use(middle.handleError);
 
@@ -99,14 +97,4 @@ module.exports = exports = function (app, express, routers) {
   // if ('development' === app.get('env')) {
   //   app.use(errorHandler());
   // }
-};
-
-'use strict';
-
-/**
- * Express configuration
- */
-module.exports = function(app) {
-
-
 };
