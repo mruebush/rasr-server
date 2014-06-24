@@ -5,13 +5,13 @@ var controller = require('./screen_controllers');
 module.exports = function(router) {
 
   // Get specific screen data
-  router.route('/get/:screenId')
+  router.route('/:screenId')
     .get(controller.getScreen)
-    .delete(controller.deleteScreen);
-
-  // Map editor API route
-  router.route('/save/:screenId')
+    .delete(controller.deleteScreen)
+    // Map editor API route
     .put(controller.saveScreen);
+
+  // router.route('/save/:screenId')
   
   // Map editor new tileset route
   router.route('/tileset')

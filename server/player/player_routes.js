@@ -5,7 +5,7 @@ var controller = require('./player_controllers.js');
 module.exports = function(router) {
 
   // Get my player
-  router.route('/player/me')
+  router.route('/me')
     .get(controller.getPlayer);
 
   // Create my player

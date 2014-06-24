@@ -58,6 +58,9 @@ module.exports = {
 
   show: function(req, res, next) {
     var userId = req.params.id;
+    if (userId === 'me') {
+      return exports.me;
+    }
 
     User.findById(userId, function(err, user) {
       if (err) return next(err);

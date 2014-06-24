@@ -24,8 +24,8 @@ module.exports = {
       if (error) return res.json(401, error);
 
       req.logIn(user, function(err) {
-        
         if (err) return res.send(err);
+        console.log(req.user.userInfo, user);
         res.json(req.user.userInfo);
       });
     })(req, res, next);

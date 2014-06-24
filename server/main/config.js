@@ -8,6 +8,7 @@ var bodyParser     = require('body-parser'),
     cookieParser   = require('cookie-parser'),
     session        = require('express-session'),
     mongoStore     = require('connect-mongo')(session),
+    cors = require('cors'),
     Promise        = require('bluebird');
 
     // compression = require('compression'),
@@ -69,6 +70,7 @@ module.exports = exports = function (app, express, routers) {
   // Persist sessions with mongoStore
   app.use(session({
     secret: 'angular-fullstack secret',
+    maxAge: 3600000,
     store: new mongoStore({
       url: app.get('DB_URL'),
       collection: 'sessions'
@@ -77,6 +79,8 @@ module.exports = exports = function (app, express, routers) {
     })
   }));
 
+  // app.use(session({ secret: '09v2#jkb!' }));
+
   // Use passport session
   app.use(passport.initialize());
   app.use(passport.session());
@@ -84,20 +88,9 @@ module.exports = exports = function (app, express, routers) {
 
   app.set('port', process.env.PORT || 3000);
   app.set('base url', process.env.URL || 'http://localhost');
-  app.use(morgan('dev'));
-  app.use(bodyParser());
+
   app.use(middle.cors);
-
-  // Disable caching of scripts for easier testing
-  app.use(function noCache(req, res, next) {
-    if (req.url.indexOf('/scripts/') === 0) {
-      res.header('Cache-Control', 'no-cache, no-store, must-revalidate');
-      res.header('Pragma', 'no-cache');
-      res.header('Expires', 0);
-    }
-    next();
-  });
-
+  // app.use(cors());
 
   app.use('/api/session', routers.SessionRouter);
 

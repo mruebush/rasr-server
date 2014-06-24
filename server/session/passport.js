@@ -9,12 +9,13 @@ var mongoose = require('mongoose'),
  * Passport configuration
  */
 passport.serializeUser(function(user, done) {
+  console.log(user, done);
   done(null, user.id);
 });
 passport.deserializeUser(function(id, done) {
   User.findOne({
     _id: id
-  }, '-salt -hashedPassword', function(err, user) { // don't ever give out the password or salt
+  }, '-salt -hashedPassword', function(err, user) {
     done(err, user);
   });
 });

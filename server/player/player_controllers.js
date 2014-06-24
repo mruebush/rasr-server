@@ -32,8 +32,12 @@ module.exports = {
   },
 
   getPlayer: function(req, res) {
-    var name = req.user.name;
-    console.log('getPlayer', name);
+    console.log(req.cookies, req.user)
+    if (req.user) {
+      var name = req.user.name;
+    } else {
+      name = 'test';
+    }
     return Player.findOneAsync({username: name})
     .then(function(foundPlayer) {
       console.log('found player', foundPlayer);
