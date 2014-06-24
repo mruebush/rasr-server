@@ -8,7 +8,6 @@ var bodyParser     = require('body-parser'),
     cookieParser   = require('cookie-parser'),
     session        = require('express-session'),
     mongoStore     = require('connect-mongo')(session),
-    cors           = require('cors'),
     Promise        = require('bluebird');
 
     // compression = require('compression'),
@@ -83,7 +82,7 @@ module.exports = exports = function (app, express, routers) {
   app.use(passport.session());
 
 
-  app.set('port', process.env.PORT || 9000);
+  app.set('port', process.env.PORT || 3000);
   app.set('base url', process.env.URL || 'http://localhost');
   app.use(morgan('dev'));
   app.use(bodyParser());
@@ -100,18 +99,13 @@ module.exports = exports = function (app, express, routers) {
   });
 
 
-  app.use('/login', routers.SessionRouter);
+  app.use('/api/session', routers.SessionRouter);
 
   app.use('/api/screen', routers.ScreenRouter);
   app.use('/api/buildWorld', routers.BuildWorldRouter);
   app.use('/api/users' , routers.UserRouter);
   app.use('/api/player' , routers.PlayerRouter);
   app.use('/api/*', routers.NotFoundRouter);
-    //All undefined api routes should return a 404
-  app.route('/api/*')
-    .get(function(req, res) {
-      res.send(404);
-    });
 
   app.use(middle.logError);
   app.use(middle.handleError);
