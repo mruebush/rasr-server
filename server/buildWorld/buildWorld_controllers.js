@@ -10,10 +10,6 @@ var sampleEnemies = require('./sampleEnemies');
 var screenHandler = require('../screen/screen_helpers.js')
 var enemyHandler = require('../enemy/enemy_controllers.js')
 
-Promise.promisifyAll(Enemy);
-Promise.promisifyAll(Screen);
-
-
 var methods = {
 
   // POPULATE WORLD FOR FIRST TIME

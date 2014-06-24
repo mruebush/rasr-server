@@ -7,9 +7,6 @@ var mongoose = require('mongoose'),
     Player = mongoose.model('Player'),
     Screen = mongoose.model('Screen');
 
-Promise.promisifyAll(Screen);
-Promise.promisifyAll(Player);
-
 module.exports = {
   /**
    * Create user

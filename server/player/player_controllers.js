@@ -3,9 +3,6 @@ var Promise = require('bluebird'),
     Player = mongoose.model('Player');
     Screen = mongoose.model('Screen');
 
-Promise.promisifyAll(Player);
-Promise.promisifyAll(Screen);
-
 module.exports = {
   newPlayer: function(req, res) {
 

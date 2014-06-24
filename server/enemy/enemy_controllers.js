@@ -3,10 +3,6 @@ var Promise = require('bluebird'),
     Enemy = mongoose.model('Enemy'),
     Screen = mongoose.model('Screen');
 
-Promise.promisifyAll(Enemy);
-Promise.promisifyAll(Screen);
-Promise.promisifyAll(mongoose);
-
 module.exports = {
   populateEnemy: function(data, mapId) {
     var screenToAdd;

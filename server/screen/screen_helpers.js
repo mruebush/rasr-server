@@ -36,7 +36,7 @@ var helpers = {
     })
     .then(function(endPeripheralScreenId) {
       // if peripheralScreenId and backsideConnection already made,
-      // no need to check all the way around when circling opposite way around.
+    // no need to check all the way around when circling opposite way around.
       if (endPeripheralScreenId) {
         backsideConnection = true;
       }

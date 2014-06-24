@@ -1,14 +1,15 @@
 "use strict";
 
-var bodyParser    = require('body-parser'),
-    middle        = require('./middleware'),
-    mongoose      = require('mongoose'),
-    morgan        = require('morgan'),
+var bodyParser     = require('body-parser'),
+    middle         = require('./middleware'),
+    mongoose       = require('mongoose'),
+    morgan         = require('morgan'),
     methodOverride = require('method-override'),
-    cookieParser = require('cookie-parser'),
-    session = require('express-session'),
-    mongoStore = require('connect-mongo')(session),
-    cors = require('cors');
+    cookieParser   = require('cookie-parser'),
+    session        = require('express-session'),
+    mongoStore     = require('connect-mongo')(session),
+    cors           = require('cors'),
+    Promise        = require('bluebird');
 
     // compression = require('compression'),
     // favicon = require('static-favicon'),
@@ -32,7 +33,14 @@ module.exports = exports = function (app, express, routers) {
   var User = require('../user/user_model');
   var Player = require('../player/player_model');
   var Enemy = require('../enemy/enemy_model');
-    // Passport Configuration
+
+  Promise.promisifyAll(Screen);
+  Promise.promisifyAll(User);
+  Promise.promisifyAll(Player);
+  Promise.promisifyAll(Enemy);
+  Promise.promisifyAll(mongoose);
+
+  // Passport Configuration
   var passport = require('../session/passport')
     
   // if ('development' === env) {

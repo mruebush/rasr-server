@@ -5,10 +5,6 @@ var mongoose = require('mongoose');
 var Screen = mongoose.model('Screen');
 var helpers = require('./screen_helpers');
 
-Promise.promisifyAll(Screen);
-Promise.promisifyAll(mongoose);
-
-
 module.exports = {
   moveScreen: function(req, res) {
     var direction = req.param('direction');
