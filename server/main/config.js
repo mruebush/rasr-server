@@ -106,8 +106,8 @@ module.exports = exports = function (app, express, routers) {
   app.use('/api/buildWorld', routers.BuildWorldRouter);
   app.use('/api/users' , routers.UserRouter);
   app.use('/api/player' , routers.PlayerRouter);
-
-  //All undefined api routes should return a 404
+  app.use('/api/*', routers.NotFoundRouter);
+    //All undefined api routes should return a 404
   app.route('/api/*')
     .get(function(req, res) {
       res.send(404);
