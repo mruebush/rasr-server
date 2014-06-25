@@ -3,6 +3,11 @@ var Promise = require('bluebird'),
     Player = mongoose.model('Player');
     Screen = mongoose.model('Screen');
 
+  var handleError = function(err, res) {
+    console.log('nooo', err);
+    res.send(500, err);
+  }; 
+
 module.exports = {
   newPlayer: function(req, res) {
 
@@ -32,11 +37,11 @@ module.exports = {
   },
 
   getPlayer: function(req, res) {
-    console.log(req.cookies, req.user)
+    
     if (req.user) {
       var name = req.user.name;
     } else {
-      name = 'test';
+      name = 'jquery';
     }
     return Player.findOneAsync({username: name})
     .then(function(foundPlayer) {

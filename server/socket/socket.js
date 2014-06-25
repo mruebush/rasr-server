@@ -44,11 +44,14 @@ module.exports.init = function(server) {
     socket.on('login', function(user) {
 
       socket.user = user;
+      console.log(user + ' attempts to login')
 
       Player.findOneAsync({
         username: user
       }).then(function(result) {
 
+
+        console.log('results',result);
         users[user] = {
           room: result.mapId,
           png: result.png,
@@ -97,9 +100,6 @@ module.exports.init = function(server) {
         2: 'left',
         3: 'right'
       };
-
-            console.log('enemy moving OUTSIDE IF STATEMENTS', data)
-
 
       if (allEnemies[room]) {
         if (allEnemies[room][dbId]) {
@@ -209,6 +209,7 @@ module.exports.init = function(server) {
     socket.on('disconnect', function() {
       // console.log('a wild connection dissappears');
       // console.log(socket.user + ' left');
+      console.log('a wild troll dissappears')
       logoutUser({
         user: socket.user
       });
@@ -376,6 +377,8 @@ module.exports.init = function(server) {
                 enemies: allEnemies[room]
               });
 
+              // console.log('enemies in room', allEnemies[room]);
+
             }
           });
         }
@@ -524,6 +527,7 @@ var calcDirection = function(enemy) {
 
 var saveUserData = function(username, userData) {
 
+  console.log('in saveuserdata')
   Player.findOneAndUpdate({
     username: username
   }, {
@@ -540,7 +544,9 @@ var saveUserData = function(username, userData) {
 
 var logoutUser = function(data) {
 
-  if (users[user]) {
+  console.log('in logout user')
+
+  if (users[data.user]) {
 
     var user = data.user;
     var userData = users[user];
