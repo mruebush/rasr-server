@@ -38,6 +38,7 @@ module.exports.init = function(server) {
 
 
   io.on('connection', function(socket){
+    console.log('yo appears');
 
     socket.on('enemyDies', function(data) {
 
@@ -80,7 +81,7 @@ module.exports.init = function(server) {
 
     socket.on('shoot', function(data) {
 
-      // console.log(data.user + ' shooting in map ' + data.mapId + ' at ' + data.x + ',' + data.y );
+      console.log(data.user + ' shooting in map ' + data.mapId + ' at ' + data.x + ',' + data.y );
 
       io.in(data.mapId).emit('shoot', {
         user: data.user,
