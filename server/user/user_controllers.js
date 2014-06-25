@@ -13,6 +13,7 @@ module.exports = {
    */
 
   create: function (req, res, next) {
+    console.log('inside create');
     var newUser = new User(req.body);
     newUser.provider = 'local';
     newUser.save(function(err, user) {
