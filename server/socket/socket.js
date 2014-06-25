@@ -1,5 +1,9 @@
 module.exports = {};
-// var _ = require('lodash');
+
+// State:isolate state and access it from this file
+
+// state, game logic & data handling
+
 var io;
 
 // sample users object:
@@ -22,8 +26,10 @@ var allEnemies = {};
 //        health: 5,
 //       }
 
+// socket listeners w/ callbacks from another file
+
 var xpToLevel = require('./level').level;
-var speedBoost = require('./level').speed;
+// var speedBoost = require('./level').speed;
 
 var mongoose = require('mongoose'),
     Player = mongoose.model('Player'),
@@ -157,10 +163,10 @@ module.exports.init = function(server) {
         message: message
       });
 
-      console.log(speedBoost(users[user].level));
+      // console.log(speedBoost(users[user].level));
 
       io.emit('levelUp', {
-        speed: speedBoost(users[user].level)
+        // speed: speedBoost(users[user].level)
       });
 
     });
@@ -172,6 +178,7 @@ module.exports.init = function(server) {
       var room = data.mapId;
       var user = data.user;
 
+      // abstract away state maniplation
       delete allEnemies[room][data._id][data.enemy];
 
       io.in(room).emit('derenderEnemy', data);
@@ -182,6 +189,7 @@ module.exports.init = function(server) {
       console.log('current xp ', users[user].xp);
       console.log('total xp needed to level', xpToLevel(users[user].level));
       
+      // feels like this belongs in some kind of model elsewhere
       if (users[user].xp >= xpToLevel(users[user].level)) {
 
         users[user].level++;
@@ -189,7 +197,7 @@ module.exports.init = function(server) {
         message = user + ' reached level ' + users[user].level;
         
         io.in(room).emit('levelUp', {
-          speed: speedBoost(users[user].level),
+          // speed: speedBoost(users[user].level),
           user: user
         });
 
@@ -535,7 +543,7 @@ var saveUserData = function(username, userData) {
     y: userData.y,
     mapId: userData.room,
     level: userData.level,
-    xp: userData.xp
+      xp: userData.xp
   }, null, function(){
     console.log(arguments);
   });
