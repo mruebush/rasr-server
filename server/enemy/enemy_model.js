@@ -5,7 +5,8 @@ var EnemySchema = new Schema({
   name: {type: String, unique: true},
   png: String,
   speed: {type: Number, default: 200},
-  health: Number
+  health: Number,
+  xp: {type: Number, default: 1}
 });
 
 module.exports = mongoose.model('Enemy', EnemySchema);
