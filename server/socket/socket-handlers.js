@@ -29,7 +29,7 @@ var allEnemies = {};
 
 var xpToLevel = require('./level').level;
 
-var enemyMethods = require('./enemy');
+var enemy = require('./enemy');
 
 
 
@@ -46,11 +46,12 @@ module.exports.registerAll = function(io, socket) {
   var movePassiveEnemies = function() {
 
     var nums = [];
+    var enemiesRoom = enemy.get(room);
     for (var room in rooms) {
-      if (rooms[room] && allEnemies[room]) {
-        for (var dbId in allEnemies[room]) {
-          for (var id in allEnemies[room][dbId]){
-            if (!allEnemies[room][dbId][id].attacking) {
+      if (rooms[room] && enemy.exists(room)) {
+        for (var dbId in enemy.get(room)) {
+          for (var id in enemy.get(room, dbId)){
+            if (!enemy.isAttacking(room, dbId, id)) {
               nums.push({
                 dir: Math.floor(Math.random() * 4),
                 passive: true

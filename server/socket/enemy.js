@@ -1,7 +1,7 @@
 var enemies = {};
 var methods = {};
 
-methods.getEnemies = function(room, dbId, enemyId) {
+methods.get = function(room, dbId, enemyId) {
   if (!room) {
     return enemies;
   }
@@ -23,6 +23,20 @@ methods.getEnemies = function(room, dbId, enemyId) {
   if (enemies[room][dbId][enemyId]) {
     return enemies[room][dbId][enemyId];
   }
+};
+
+methods.exists = function(room, dbId, enemyId) {
+  if (!dbId) {
+    return !!enemies[room];
+  }
+
+  if (!enemyId) {
+    return !!enemies[room][dbId];
+  }
+};
+
+methods.isAttacking = function(room, dbId, enemyId) {
+  return !!enemies[room][dbId][enemyId].attacking;
 };
 
 module.exports.methods = methods;
