@@ -37,9 +37,17 @@ module.exports.init = function(io) {
     methods.registerAll(io, socket);
     var handlers = methods.handlers;
 
+    // Dev-testing handlers
+    socket.on('resetAll', handlers.resetAll);
+    socket.on('freeXp', handlers.freeXp);
+
+    // Game handlers
     socket.on('login', handlers.login);
+    socket.on('disconnect', handlers.disconnect);
     socket.on('gameOver', handlers.gameOver);
     socket.on('enemyMoving', handler.enemyMoving);
+    socket.on('enemyDies', handler.enemyDies);
+    socket.on('damageEnemy', handler.damageEnemy);
 
   });
 

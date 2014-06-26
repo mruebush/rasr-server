@@ -81,6 +81,13 @@ module.exports.registerAll = function(io, socket) {
     serverMessage(user + ' has joined the game!');
   };
 
+  handlers.disconnect = function() {
+    console.log('a wild troll disappears');
+    logoutUser({
+      user: socket.user
+    });
+  };
+
   handlers.gameOver = function(data) {
     var room = data.room;
     var user = data.user;
@@ -140,89 +147,63 @@ module.exports.registerAll = function(io, socket) {
     emitToAll('levelUp', void 0);
   };
 
+  handlers.enemyDies = function(data) {
+    var room = data.mapId;
+    var user = data.user;
+
+    // abstract away state maniplation
+    delete allEnemies[room][data._id][data.enemy];
+
+    emitToRoom(room, 'derenderEnemy', data);
+
+    var message = user + ' has slain a ' + data.enemyName + ' for ' + data.xp + ' exp!';
+
+    users[user].xp += data.xp;
+
+    console.log('current xp ', users[user].xp);
+    console.log('total xp needed to level', xpToLevel(users[user].level));
+    
+    // feels like this belongs in some kind of model elsewhere
+    if (users[user].xp >= xpToLevel(users[user].level)) {
+
+      users[user].level++;
+      users[user].xp = 0;
+      message = user + ' reached level ' + users[user].level;
+
+      emitToRoom(room, 'levelUp', {
+        user: user
+      });
+      saveUserData(user, users[user]);
+
+    }
+    serverMessage(message);
+  };
+
+  handlers.damageEnemy = function(data) {
+    console.log(data.user + ' damages enemy ' + data.enemy + ' in ' + data.room);
+    
+    if (allEnemies[data.room]) {
+      if (allEnemies[data.room][data._id]) {
+
+        if (allEnemies[data.room][data._id][data.enemy]) {
+
+          allEnemies[data.room][data._id][data.enemy].health--;
+          allEnemies[data.room][data._id][data.enemy].attacking = users[data.user];
+
+          emitToRoom(data.room, 'damageEnemy', {
+            serverId: data.enemy
+          });
+        }
+
+      }
+    } 
+  };
+
 
 };
 
-    socket.on('freeXp', function(data) {
-
-
-    });
-    
-
-    socket.on('enemyDies', function(data) {
-
-
-      var room = data.mapId;
-      var user = data.user;
-
-      // abstract away state maniplation
-      delete allEnemies[room][data._id][data.enemy];
-
-      io.in(room).emit('derenderEnemy', data);
-      var message = user + ' has slain a ' + data.enemyName + ' for ' + data.xp + ' exp!';
-
-      users[user].xp += data.xp;
-
-      console.log('current xp ', users[user].xp);
-      console.log('total xp needed to level', xpToLevel(users[user].level));
-      
-      // feels like this belongs in some kind of model elsewhere
-      if (users[user].xp >= xpToLevel(users[user].level)) {
-
-        users[user].level++;
-        users[user].xp = 0;
-        message = user + ' reached level ' + users[user].level;
-        
-        io.in(room).emit('levelUp', {
-          // speed: speedBoost(users[user].level),
-          user: user
-        });
-
-        saveUserData(user, users[user]);
-
-      }
-
-      io.in(room).emit('message', {
-        user: 'Server',
-        message: message
-      });
-
-
-    });
-
-
-    socket.on('disconnect', function() {
-      // console.log('a wild connection dissappears');
-      // console.log(socket.user + ' left');
-      console.log('a wild troll dissappears')
-      logoutUser({
-        user: socket.user
-      });
-      // var userData = users[socket.user];
-      // saveUserData(socket.user, userData);
-    });
 
     socket.on('damageEnemy', function(data) {
-      console.log(data.user + ' damages enemy ' + data.enemy + ' in ' + data.room);
-      // console.log(allEnemies[data.room][data._id])
-
-      if (allEnemies[data.room]) {
-        if (allEnemies[data.room][data._id]) {
-
-          if (allEnemies[data.room][data._id][data.enemy]) {
-
-            allEnemies[data.room][data._id][data.enemy].health--;
-            allEnemies[data.room][data._id][data.enemy].attacking = users[data.user];
-
-            io.in(data.room).emit('damageEnemy', {
-              serverId: data.enemy
-            });
-          }
-
-        }
-      } else {
-        console.log ('crash avoided');
-      }
 
 
     });
