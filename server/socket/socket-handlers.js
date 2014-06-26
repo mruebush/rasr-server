@@ -94,7 +94,7 @@ module.exports.registerAll = function(io, socket) {
     });
 
     emitToAll('leave', {
-      user: user
+      user: socket.user
     });
   };
 
