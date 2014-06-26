@@ -18,4 +18,6 @@ server.listen(port, function(){
 });
 
 // boostrap socket
-require('./server/socket/socket').init(server);
+// require('./server/socket/socket').init(server);
+require('./server/socket/init')(server);
+
