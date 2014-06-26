@@ -33,6 +33,19 @@ methods.delete = function(room, dbId, enemyId) {
   delete enemies[room][dbId][enemyId];
 };
 
+methods.initRoom = function(room) {
+  enemies[room] = {};
+};
+
+
+methods.initDbId = function(room, dbId) {
+  enemies[room][dbId] = {};
+};
+
+methods.initEnemyId = function(room, dbId, enemyId) {
+  enemies[room][dbId][enemyId] = {};
+};
+
 methods.damage = function(room, dbId, enemyId) {
   var enemy = methods.get(room, dbId, enemyId);
   if (enemy) {
@@ -47,8 +60,13 @@ methods.attack = function(room, dbId, enemyId, user) {
   }
 };
 
-
-
+methods.setPosition = function(room, dbId, enemyId, position) {
+  var enemy = methods.get(room, dbId, enemyId);
+  if (enemy) {
+    enemy.position[0] = position[0];
+    enemy.position[1] = position[1];
+  }
+};
 
 methods.exist = function(room, dbId, enemyId) {
   return !!methods.get(room, dbId, enemyId);

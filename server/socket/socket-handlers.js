@@ -300,14 +300,12 @@ module.exports.registerAll = function(io, socket) {
   };
 
   handlers.stopEnemy = function(data) {
-    if (allEnemies[data.room]) {
-      if (allEnemies[data.room][data._id]) {
-        if (allEnemies[data.room][data._id][data.enemy]) {
-          allEnemies[data.room][data._id][data.enemy].position[0] = data.x;
-          allEnemies[data.room][data._id][data.enemy].position[1] = data.y;
-        }
-      }
-    }
+
+    var room = data.room;
+    var dbId = data._id;
+    var enemyId = data.enemy;
+
+    enemies.setPosition(room, dbId, enemyId, [data.x, data.y]);
   };
 
   handlers.join = function(data) {
@@ -316,7 +314,7 @@ module.exports.registerAll = function(io, socket) {
     var user = data.user;
     var x = data.x;
     var y = data.y;
-    var enemies = data.enemies;
+    var creatures = data.enemies;
 
     socket.join(room);
 
@@ -332,7 +330,7 @@ module.exports.registerAll = function(io, socket) {
 
     console.log(user + ' joined ' + room + ' in ' + x + ',' + y);
     
-    if (enemies.length === 0) {
+    if (creatures.length === 0) {
 
       console.log('no enemies in room');
 
@@ -343,7 +341,7 @@ module.exports.registerAll = function(io, socket) {
         y: y
       });
 
-    } else if (allEnemies[room]) {
+    } else if (enemies.exist(room)) {
 
       console.log('got enemies in memory.. ');
 
@@ -352,22 +350,26 @@ module.exports.registerAll = function(io, socket) {
         others: getOtherUsersInRoom(room, user),
         x: x,
         y: y,
-        enemies: allEnemies[room]
+        enemies: enemies.get(room)
       });
 
     } else {
 
       console.log('querying db for enemies');
-      allEnemies[room] = {};
-      for (var i = 0, _len = enemies.length; i < _len; i++) {
+      // allEnemies[room] = {};
+      enemies.initRoom(room);
+      for (var i = 0, _len = creatures.length; i < _len; i++) {
 
-        var monsterId = data.enemies[i].id;
+        var dbId = data.creatures[i].id;
         
-        allEnemies[room][monsterId] = {};
+        // allEnemies[room][monsterId] = {};
+        enemies.initDbId(room, dbId);
 
-        for (var j = 0, _len2 = enemies[i].count; j < _len2; j++) {
-          allEnemies[room][monsterId][j] = {};
-          allEnemies[room][monsterId][j].position = data.positions[monsterId][j];
+        for (var j = 0, _len2 = creatures[i].count; j < _len2; j++) {
+          // allEnemies[room][dbId][j] = {};
+          enemies.initEnemyId(room, dbId, j);
+          enemies.setPosition(room, dbId, j, data.positions[dbId][j]);
+          // allEnemies[room][dbId][j].position = data.positions[dbId][j];
         }
       }
 
@@ -380,7 +382,7 @@ module.exports.registerAll = function(io, socket) {
 
         getEnemyData(enemyId).then(function(result){
 
-          pushInfo(allEnemies[room][enemyId], {
+          enemies.pushInfo(enemies.get(room, enemyId), {
             health: result.health,
             name: result.name,
             _id: result._id,
@@ -398,7 +400,7 @@ module.exports.registerAll = function(io, socket) {
               others: getOtherUsersInRoom(room, user),
               x: x,
               y: y,
-              enemies: allEnemies[room]
+              enemies: enemies.get(room)
             });
           }
         });
