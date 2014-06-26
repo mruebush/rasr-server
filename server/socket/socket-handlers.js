@@ -30,6 +30,7 @@ var rooms = {};
 var xpToLevel = require('./level').level;
 
 var enemies = require('./enemy').methods;
+var users = require('./user').methods;
 
 // console.log('API', enemies);
 
