@@ -35,12 +35,11 @@ module.exports.init = function(io) {
     
     var methods = require('./socket');
     methods.registerAll(io, socket);
-
     var handlers = methods.handlers;
 
-    console.log('handlers', handlers);
-
     socket.on('login', handlers.login);
+    socket.on('gameOver', handlers.gameOver);
+    socket.on('enemyMoving', handler.enemyMoving);
 
   });
 

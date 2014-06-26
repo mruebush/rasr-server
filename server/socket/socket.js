@@ -39,6 +39,18 @@ var mongoose = require('mongoose'),
 
 module.exports.registerAll = function(io, socket) {
 
+  var serverMessage = function(message) {
+    message = '[' + new Date().toDateString + '] ' + message;
+    io.emit('message', {
+      user: 'Server',
+      message: message
+    });
+  };
+
+  var emitToRoom = function(room, event, data) {
+    io.in(room).emit(event, data);
+  };
+
   handlers.login = function(user) {
 
     socket.user = user;
@@ -48,8 +60,6 @@ module.exports.registerAll = function(io, socket) {
       username: user
     }).then(function(result) {
 
-
-      console.log('results',result);
       users[user] = {
         room: result.mapId,
         png: result.png,
@@ -64,122 +74,52 @@ module.exports.registerAll = function(io, socket) {
 
     });
 
-    io.emit('message', {
-      user: 'Server',
-      message: user + ' has joined the game!'
-    });
+    serverMessage(user + ' has joined the game!');
+  };
 
+  handlers.gameOver = function(data) {
+    var room = data.room;
+    var user = data.user;
+    users[user].xp = users[user].xp * 0.2;
+    saveUserData(user, users[user]);
+    emitToRoom(room, 'gameOver', {
+      user: user
+    });
+  };
+
+  handlers.enemyMoving = function(data) {
+    var room = data.room;
+    var dbId = data._id;
+    var enemyId = data.enemy;
+
+    if (allEnemies[room]) {
+      if (allEnemies[room][dbId]) {
+        if (allEnemies[room][dbId][enemyId]) {
+
+          var enemy = allEnemies[room][dbId][enemyId];
+
+          enemy.position[0] = data.x;
+          enemy.position[1] = data.y;
+
+          if (distance([data.x, data.y],[enemy.attacking.x, enemy.attacking.y]) > 37) {
+
+            var num = calcDirection(allEnemies[room][dbId][enemyId]);
+            emitToRoom(room, 'enemyMoving', {
+              dir: num,
+              dbId: dbId,
+              serverId: enemyId
+            });
+          }
+        }
+      }
+    }
   };
 
 
 };
 
-module.exports.handlers = handlers;
-
-
-
-module.exports.init = function(server) {
-
-  // io = require('socket.io').listen(server);
-  // io.attach(server);
-
-  var handlers = require('./handlers').init(server);
-  io = handlers.io;
-
-  io.on('connection', function(socket){
-
-    // get all player info as soon as they log in
-    console.log('a wild troll appears');
-
-    socket.on('login', handlers.login);
-
-    // socket.on('login', function(user) {
-
-    //   socket.user = user;
-    //   console.log(user + ' attempts to login')
-
-    //   Player.findOneAsync({
-    //     username: user
-    //   }).then(function(result) {
-
-
-    //     console.log('results',result);
-    //     users[user] = {
-    //       room: result.mapId,
-    //       png: result.png,
-    //       speed: result.speed,
-    //       xp: +result.xp,
-    //       level: +result.level,
-    //       x: result.x,
-    //       y: result.y
-    //     };
-
-    //     console.log('loaded ', users[user]);
-
-    //   });
-
-    //   io.emit('message', {
-    //     user: 'Server',
-    //     message: user + ' has joined the game!'
-    //   });
-
-    // });
-
-    socket.on('gameOver', function(data) {
-
-      var room = data.room;
-      var user = data.user;
-
-      users[user].xp = users[user].xp * 0.2;
-
-      saveUserData(user, users[user]);
-
-      io.in(room).emit('gameOver', {
-        user: user
-      });
-
-    });
-
     socket.on('enemyMoving', function(data) {
 
-      var room = data.room;
-      var dbId = data._id;
-      var enemyId = data.enemy;
-
-      var dirs = {
-        0: 'up',
-        1: 'down',
-        2: 'left',
-        3: 'right'
-      };
-
-      if (allEnemies[room]) {
-        if (allEnemies[room][dbId]) {
-          if (allEnemies[room][dbId][enemyId]) {
-
-            var enemy = allEnemies[room][dbId][enemyId];
-
-            enemy.position[0] = data.x;
-            enemy.position[1] = data.y;
-            console.log('enemy moving', data)
-
-            if (distance([data.x, data.y],[enemy.attacking.x, enemy.attacking.y]) > 37) {
-
-              var num = calcDirection(allEnemies[room][dbId][enemyId]);
-              var dir = dirs[num];
-
-              io.in(room).emit('enemyMoving', {
-                dir: num,
-                dbId: dbId,
-                serverId: enemyId
-              });
-            }
-
-
-          }
-        }
-        
-      }
         
     });
 
