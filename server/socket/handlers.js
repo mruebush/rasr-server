@@ -52,7 +52,11 @@ module.exports.init = function(io) {
     socket.on('shoot', handlers.shoot);
     socket.on('stopEnemy', handlers.stopEnemy);
     socket.on('join', handlers.join);
-    
+    socket.on('leave', handlers.leave);
+    socket.on('move', handlers.move);
+    socket.on('message', handlers.message);
+
+
 
   });
 
