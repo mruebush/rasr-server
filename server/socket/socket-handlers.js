@@ -16,7 +16,7 @@ var users = {};
 var rooms = {}; 
 
 // enemies
-var allEnemies = {};
+// var allEnemies = {};
 
 // var allEnemies = {};
 // allEnemies looks like:
@@ -331,7 +331,7 @@ module.exports.registerAll = function(io, socket) {
     }, users[user]);
 
     console.log(user + ' joined ' + room + ' in ' + x + ',' + y);
-    
+
     if (creatures.length === 0) {
 
       console.log('no enemies in room');
@@ -376,14 +376,17 @@ module.exports.registerAll = function(io, socket) {
 
       var callbacksFired = 0;
 
-      for (var i = 0, _len = enemies.length; i < _len; i++) {
+      for (var i = 0, _len = creatures.length; i < _len; i++) {
 
-        var count = enemies[i].count;
-        var enemyId = enemies[i].id;
+        var count = creatures[i].count;
+        var enemyId = creatures[i].id;
 
         getEnemyData(enemyId).then(function(result){
 
-          enemies.pushInfo(enemies.get(room, enemyId), {
+          var troll = enemies.get(room, enemyId);
+          console.log('troll', troll);
+
+          enemies.pushInfo(troll, {
             health: result.health,
             name: result.name,
             _id: result._id,
@@ -392,6 +395,8 @@ module.exports.registerAll = function(io, socket) {
             xp: result.xp,
             attacking: false
           });
+
+          console.log('troll', troll);
 
           callbacksFired++;
           if (callbacksFired === _len) {
@@ -416,8 +421,8 @@ module.exports.registerAll = function(io, socket) {
       user: user
     });
 
-    socket.leave(mapId);
-    console.log(user + ' left ' + mapId);
+    socket.leave(room);
+    console.log(user + ' left ' + room);
   };
 
   handlers.move = function(data) {

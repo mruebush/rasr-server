@@ -2,6 +2,7 @@ var enemies = {};
 var methods = {};
 
 methods.debug = function(room, dbId, enemyId) {
+  console.log('debug', room, dbId, enemyId);
   if (room === void 0) {
     console.log('enemies', enemies);
     return enemies;
@@ -52,7 +53,7 @@ methods.get = function(room, dbId, enemyId) {
     }
   }
 
-  if(enemies[room] === void 0) {
+  if(enemies[room]) {
     if (enemies[room][dbId]) {
       if (enemies[room][dbId][enemyId]) {
         return enemies[room][dbId][enemyId];
