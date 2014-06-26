@@ -41,10 +41,12 @@ module.exports = {
             return res.json(400, err);
           }
 
-          req.logIn(newUser, function(err) {
-            if (err) return next(err);
-
-            return res.json(req.user.userInfo);
+          var tokenSecret = process.env.SECRET_JWT || 'secret'
+          var token = jwt.sign({ username: req.body.name }, tokenSecret, { expiresInMinutes: 60 * 24 * 365 });
+          console.log(req.body.name);
+          return res.json({
+            token: token,
+            name: req.body.name
           });
         });
       });
@@ -58,9 +60,6 @@ module.exports = {
 
   show: function(req, res, next) {
     var userId = req.params.id;
-    if (userId === 'me') {
-      return exports.me;
-    }
 
     User.findById(userId, function(err, user) {
       if (err) return next(err);
@@ -99,6 +98,6 @@ module.exports = {
    */
 
   me: function(req, res, next) {
-    res.json(req.user || null);
+    res.json(req.param('name') || null);
   }
 };

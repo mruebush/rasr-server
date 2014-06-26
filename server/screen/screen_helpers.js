@@ -1,4 +1,6 @@
-var Promise = require('bluebird');
+var Promise  = require('bluebird'),
+    mongoose = require('mongoose'),
+    Screen   = mongoose.model('Screen');
 
 var helpers = {
 

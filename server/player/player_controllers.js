@@ -1,7 +1,14 @@
 var Promise = require('bluebird'),
     mongoose = require('mongoose'),
-    Player = mongoose.model('Player');
+    Player = mongoose.model('Player'),
+    jwt = require('jsonwebtoken'),
     Screen = mongoose.model('Screen');
+
+var handleError = function(err, res) {
+  console.log(err);
+  res.send(500, err);
+}
+
 
 module.exports = {
   newPlayer: function(req, res) {
@@ -32,12 +39,8 @@ module.exports = {
   },
 
   getPlayer: function(req, res) {
-    console.log(req.cookies, req.user)
-    if (req.user) {
-      var name = req.user.name;
-    } else {
-      name = 'test';
-    }
+    // jwt.decode(req.user)
+    var name = req.param('name') || 'test1';
     return Player.findOneAsync({username: name})
     .then(function(foundPlayer) {
       console.log('found player', foundPlayer);
