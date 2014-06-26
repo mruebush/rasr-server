@@ -1,18 +1,50 @@
 var enemies = {};
 var methods = {};
 
-methods.get = function(room, dbId, enemyId) {
-  if (!room) {
+methods.debug = function(room, dbId, enemyId) {
+  if (room === void 0) {
+    console.log('enemies', enemies);
     return enemies;
   }
 
-  if (!dbId) {
+  if (dbId === void 0) {
+    if (enemies[room]) {
+      console.log('enemies[room]', enemies[room]);
+      return enemies[room];
+    }
+  }
+
+  if (enemyId === void 0) {
+    if (enemies[room]) {
+      if (enemies[room][dbId]) {
+        console.log('enemies[room][dbid]', enemies[room][dbId]);
+        return enemies[room][dbId];
+      }
+    }
+  }
+
+  if(enemies[room]) {
+    if (enemies[room][dbId]) {
+      if (enemies[room][dbId][enemyId]) {
+        console.log('last', enemies[room][dbId][enemyId]);
+        return enemies[room][dbId][enemyId];
+      }
+    }
+  }
+};
+
+methods.get = function(room, dbId, enemyId) {
+  if (room === void 0) {
+    return enemies;
+  }
+
+  if (dbId === void 0) {
     if (enemies[room]) {
       return enemies[room];
     }
   }
 
-  if (!enemyId) {
+  if (enemyId === void 0) {
     if (enemies[room]) {
       if (enemies[room][dbId]) {
         return enemies[room][dbId];
@@ -20,7 +52,7 @@ methods.get = function(room, dbId, enemyId) {
     }
   }
 
-  if(enemies[room]) {
+  if(enemies[room] === void 0) {
     if (enemies[room][dbId]) {
       if (enemies[room][dbId][enemyId]) {
         return enemies[room][dbId][enemyId];
@@ -44,6 +76,7 @@ methods.initDbId = function(room, dbId) {
 
 methods.initEnemyId = function(room, dbId, enemyId) {
   enemies[room][dbId][enemyId] = {};
+  enemies[room][dbId][enemyId].position = [];
 };
 
 methods.damage = function(room, dbId, enemyId) {

@@ -29,7 +29,9 @@ var allEnemies = {};
 
 var xpToLevel = require('./level').level;
 
-var enemies = require('./enemy');
+var enemies = require('./enemy').methods;
+
+console.log('API', enemies);
 
 
 
@@ -360,9 +362,8 @@ module.exports.registerAll = function(io, socket) {
       enemies.initRoom(room);
       for (var i = 0, _len = creatures.length; i < _len; i++) {
 
-        var dbId = data.creatures[i].id;
-        
-        // allEnemies[room][monsterId] = {};
+        // console.log('crash', data.creatures);
+        var dbId = data.enemies[i].id;
         enemies.initDbId(room, dbId);
 
         for (var j = 0, _len2 = creatures[i].count; j < _len2; j++) {
