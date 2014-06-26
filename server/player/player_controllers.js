@@ -9,7 +9,6 @@ var handleError = function(err, res) {
   res.send(500, err);
 }
 
-
 module.exports = {
   newPlayer: function(req, res) {
 
@@ -39,8 +38,7 @@ module.exports = {
   },
 
   getPlayer: function(req, res) {
-    // jwt.decode(req.user)
-    var name = req.param('name') || 'test1';
+    var name = req.param('name');
     return Player.findOneAsync({username: name})
     .then(function(foundPlayer) {
       console.log('found player', foundPlayer);
@@ -71,7 +69,7 @@ module.exports = {
         })
       } else {
         // didn't find player...
-        handleError(err, res);
+        handleError('did not find player', res);
       }
     })
     .catch(function(err) {
