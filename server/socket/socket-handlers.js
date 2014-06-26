@@ -253,14 +253,13 @@ module.exports.registerAll = function(io, socket) {
   handlers.enemyDies = function(data) {
     var room = data.mapId;
     var user = data.user;
+    var dbId = data._id;
+    var enemyId = data.enemy;
 
-    // abstract away state maniplation
-    delete allEnemies[room][data._id][data.enemy];
-
+    enemies.delete(room, dbId, enemyId);
     emitToRoom(room, 'derenderEnemy', data);
 
     var message = user + ' has slain a ' + data.enemyName + ' for ' + data.xp + ' exp!';
-
     users[user].xp += data.xp;
 
     console.log('current xp ', users[user].xp);

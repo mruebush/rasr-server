@@ -29,6 +29,10 @@ methods.get = function(room, dbId, enemyId) {
   }
 };
 
+methods.delete = function(room, dbId, enemyId) {
+  delete enemies[room][dbId][enemyId];
+};
+
 
 methods.exist = function(room, dbId, enemyId) {
   return !!methods.get(room, dbId, enemyId);
