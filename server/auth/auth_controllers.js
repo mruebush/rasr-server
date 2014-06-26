@@ -1,17 +1,44 @@
 'use strict';
 
-var mongoose = require('mongoose'),
-    User = mongoose.model('User'),
-    passport = require('passport'),
-    Promise = require('bluebird'),
-    Player = mongoose.model('Player'),
-    jwt = require('jsonwebtoken'),
-    Screen = mongoose.model('Screen');
+// var mongoose = require('mongoose'),
+var passport = require('passport');
+var jwt = require('jsonwebtoken');
+var mongoose = require('mongoose');
+var User = mongoose.model('User');
+var Screen = mongoose.model('Screen');
+var Player = mongoose.model('Player');
 
 module.exports = {
+
   /**
-   * Create user
+   * Logout - client deletes their JWT
    */
+
+  /**
+   * Login
+   */
+
+  login: function (req, res, next) {
+    passport.authenticate('local', function(err, user, info) {
+      var error = err || info;
+      if (error) return res.json(401, error);
+      // user has authenticated correctly - provide user with JWT token, expires in one year, send back username
+      User.findOneAsync({email: req.body.email})
+      .then(function(foundUser) {
+        var tokenSecret = process.env.SECRET_JWT || 'secret'
+        var token = jwt.sign({ username: req.body.name }, tokenSecret, { expiresInMinutes: 60 * 24 * 365 });
+        res.json({
+          token: token,
+          name: foundUser.name
+        });
+      })
+      .catch(function(err) {
+        console.log(err);
+        res.send(err);
+      })
+    })(req, res, next);
+  },
+
 
   create: function (req, res, next) {
     console.log('inside create');
@@ -56,50 +83,4 @@ module.exports = {
     });
   },
 
-  /**
-   *  Get profile of specified user
-   */
-
-  show: function(req, res, next) {
-    var userId = req.params.id;
-
-    User.findById(userId, function(err, user) {
-      if (err) return next(err);
-      if (!user) return res.send(404);
-
-      res.send({
-        profile: user.profile
-      });
-    });
-  },
-
-  /**
-   * Change password
-   */
-
-  changePassword: function(req, res, next) {
-    var oldPass = String(req.body.oldPassword);
-    var newPass = String(req.body.newPassword);
-
-    User.findById(userId, function (err, user) {
-      if(user.authenticate(oldPass)) {
-        user.password = newPass;
-        user.save(function(err) {
-          if (err) return res.send(400);
-
-          res.send(200);
-        });
-      } else {
-        res.send(403);
-      }
-    });
-  },
-
-  /**
-   * Get current user
-   */
-
-  me: function(req, res, next) {
-    res.json(req.param('name') || null);
-  }
 };
