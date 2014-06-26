@@ -5,6 +5,7 @@ var mongoose = require('mongoose'),
     passport = require('passport'),
     Promise = require('bluebird'),
     Player = mongoose.model('Player'),
+    jwt = require('jsonwebtoken'),
     Screen = mongoose.model('Screen');
 
 module.exports = {
