@@ -54,4 +54,111 @@ methods.save = function(username, data) {
   });
 };
 
+methods.login = function(user) {
+
+  Player.findOneAsync({
+    username: user
+  }).then(function(result) {
+
+    users[user] = {
+      room: result.mapId,
+      png: result.png,
+      speed: result.speed,
+      xp: +result.xp,
+      level: +result.level,
+      x: result.x,
+      y: result.y
+    };
+
+    console.log('loaded ', users[user]);
+
+  });
+};
+
+methods.logout = function(data) {
+  var user = data.user;
+
+  if (methods.exist(user)) {
+
+    var userData = methods.get(user);
+    var room = userData.room;
+    methods.save(user, userData);
+    methods.delete(user);
+
+    emitToRoom(room, 'leave', {
+      user: user
+    });
+    
+  }
+};
+
+methods.gameOver = function(username, data) {
+  var user = methods.get(username);
+  user.xp *= 0.2;
+  methods.save(username, data);
+};
+
+methods.resetAll = function(username) {
+  var user = methods.get(username);
+  user.xp = 0;
+  user.level = 1;
+};
+
+methods.awardXp = function(username, xp) {
+  var message;
+  var levelUp;
+  var user = methods.get(username);
+  user.xp += xp;
+
+  if (user.xp >= methods.xpToLevel(user.level)) {
+
+    user.level++;
+    user.xp = 0;
+    methods.save(username, user);
+    levelUp = true;
+  } 
+
+  return levelUp;
+};
+
+methods.freeXp = function(username, xp) {
+    var user = methods.get(username);
+    user.xp += xp;
+
+    console.log("Awarded " + xp + " free xp to " + username);
+
+    var message = user + ' was awarded ' + data.xp + ' free xp';
+
+    if (user.xp >= methods.xpToLevel(user.level)) {
+      user.level++;
+      user.xp = 0;
+      message = username + ' reached level ' + user.level; 
+    }
+
+    return message;
+};
+
+methods.xpToLevel = function(level) {
+  return Math.floor(Math.exp(0.5 * level));
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 module.exports.methods = methods;

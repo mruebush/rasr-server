@@ -78,25 +78,6 @@ module.exports.registerAll = function(io, socket) {
 
   var passiveEnemyTimer = setInterval(movePassiveEnemies, 2500);
 
-
-  var logoutUser = function(data) {
-    var user = data.user;
-
-    if (users.exist(user)) {
-
-      var userData = users.get(user);
-      var room = userData.room;
-      users.save(user, userData);
-      users.delete(user);
-
-      emitToRoom(room, 'leave', {
-        user: user
-      });
-      
-    }
-
-  };
-
   var distance = function(enemy, player) {
     return Math.sqrt(Math.pow(enemy[0] - player[0], 2) + Math.pow(enemy[1] - player[1], 2));
   };
@@ -131,34 +112,14 @@ module.exports.registerAll = function(io, socket) {
   };
 
   handlers.login = function(user) {
-
     socket.user = user;
-    console.log(user + ' attempts to login');
-
-    Player.findOneAsync({
-      username: user
-    }).then(function(result) {
-
-      users[user] = {
-        room: result.mapId,
-        png: result.png,
-        speed: result.speed,
-        xp: +result.xp,
-        level: +result.level,
-        x: result.x,
-        y: result.y
-      };
-
-      console.log('loaded ', users[user]);
-
-    });
-
+    users.login(user);
     serverMessage(user + ' has joined the game!');
   };
 
   handlers.disconnect = function() {
     console.log('a wild troll disappears');
-    logoutUser({
+    users.logout({
       user: socket.user
     });
   };
@@ -166,8 +127,8 @@ module.exports.registerAll = function(io, socket) {
   handlers.gameOver = function(data) {
     var room = data.room;
     var user = data.user;
-    users[user].xp = users[user].xp * 0.2;
-    saveUserData(user, users[user]);
+
+    users.gameOver(user, data);
     emitToRoom(room, 'gameOver', {
       user: user
     });
@@ -198,24 +159,17 @@ module.exports.registerAll = function(io, socket) {
   };
 
   handlers.resetAll = function(data) {
-    users[data.user].xp = 0;
-    users[data.user].level = 1;
+    users.resetAll(data.user);
   };
 
   handlers.freeXp = function(data) {
     var user = data.user;
-    users[data.user].xp += data.xp;
-    console.log("Awarded " + data.xp + " free xp to " + user);
+    var xp = data.xp;
 
-    var message = user + ' was awarded ' + data.xp + ' free xp';
+    var message = users.freeXp(user, xp);
 
-    if (users[user].xp >= xpToLevel(users[user].level)) {
-      users[user].level++;
-      users[user].xp = 0;
-      message = user + ' reached level ' + users[user].level; 
-    }
     serverMessage(message);
-    emitToAll('levelUp', void 0);
+    emitToAll('levelUp');
   };
 
   handlers.enemyDies = function(data) {
@@ -223,29 +177,24 @@ module.exports.registerAll = function(io, socket) {
     var user = data.user;
     var dbId = data._id;
     var enemyId = data.enemy;
+    var xp = data.xp;
 
     enemies.delete(room, dbId, enemyId);
     emitToRoom(room, 'derenderEnemy', data);
 
-    var message = user + ' has slain a ' + data.enemyName + ' for ' + data.xp + ' exp!';
-    users[user].xp += data.xp;
+    var message = user + ' has slain a ' + data.enemyName + ' for ' + xp + ' exp!';
+    // users[user].xp += data.xp;
+    var levelUp = users.awardXp(user, xp);
 
-    console.log('current xp ', users[user].xp);
-    console.log('total xp needed to level', xpToLevel(users[user].level));
-    
-    // feels like this belongs in some kind of model elsewhere
-    if (users[user].xp >= xpToLevel(users[user].level)) {
-
-      users[user].level++;
-      users[user].xp = 0;
-      message = user + ' reached level ' + users[user].level;
-
+    if (levelUp) {
+      message = username + ' reached level ' + user.level;
       emitToRoom(room, 'levelUp', {
         user: user
       });
-      saveUserData(user, users[user]);
 
     }
+    console.log('current xp ', users[user].xp);
+    console.log('total xp needed to level', xpToLevel(users[user].level));
     serverMessage(message);
   };
 
