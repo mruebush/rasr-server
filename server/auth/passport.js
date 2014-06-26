@@ -8,19 +8,7 @@ var mongoose = require('mongoose'),
 /**
  * Passport configuration
  */
-passport.serializeUser(function(user, done) {
-  console.log(user, done);
-  done(null, user.id);
-});
-passport.deserializeUser(function(id, done) {
-  User.findOne({
-    _id: id
-  }, '-salt -hashedPassword', function(err, user) {
-    done(err, user);
-  });
-});
 
-// add other strategies for more authentication flexibility
 passport.use(new LocalStrategy({
     usernameField: 'email',
     passwordField: 'password' // this is the virtual field on the model

@@ -36,7 +36,7 @@ var methods = {
       return enemyHandler.makeEnemy(enemy1);
     })
     .then(function() {
-      return Screen.createAsync(screen1)
+      return Screen.createAsync(screen1);
     })
     .then(function(createdScreen) {
       console.log(createdScreen._id)
@@ -46,7 +46,7 @@ var methods = {
       return methods.createWorld('right', screen2, createdScreenId, req, res);
     })
     .then(function(createdScreenId) {
-      console.log(createdScreenId, 'line 53 - DOWN');
+      console.log(createdScreenId);
       return methods.createWorld('down', screen3, createdScreenId, req, res);
     })
     .then(function(createdScreenId) {
@@ -90,7 +90,6 @@ var methods = {
     }
 
     var enemyOnScreen1 = sampleEnemies.enemyOnScreen1;
-
     // create new screen
     return Screen.createAsync(newScreen)
     .then(function(createdScreen) {

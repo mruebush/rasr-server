@@ -1,12 +1,13 @@
 var Promise = require('bluebird'),
     mongoose = require('mongoose'),
-    Player = mongoose.model('Player');
+    Player = mongoose.model('Player'),
+    jwt = require('jsonwebtoken'),
     Screen = mongoose.model('Screen');
 
-  var handleError = function(err, res) {
-    console.log('nooo', err);
-    res.send(500, err);
-  }; 
+var handleError = function(err, res) {
+  console.log(err);
+  res.send(500, err);
+}
 
 module.exports = {
   newPlayer: function(req, res) {
@@ -37,12 +38,7 @@ module.exports = {
   },
 
   getPlayer: function(req, res) {
-    
-    if (req.user) {
-      var name = req.user.name;
-    } else {
-      name = 'jquery';
-    }
+    var name = req.param('name');
     return Player.findOneAsync({username: name})
     .then(function(foundPlayer) {
       console.log('found player', foundPlayer);
@@ -73,7 +69,7 @@ module.exports = {
         })
       } else {
         // didn't find player...
-        handleError(err, res);
+        handleError('did not find player', res);
       }
     })
     .catch(function(err) {
