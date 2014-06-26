@@ -1,6 +1,10 @@
 var users = {};
 var methods = {};
 
+// sample users object:
+// { user1: { room: 'name of room', x: xCoord, y: yCoord, xp:, level:}, user2: {...}, ...}
+// var users = {};
+
 var Player = require('mongoose').model('Player');
 
 methods.getAll = function() {

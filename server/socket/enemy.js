@@ -1,6 +1,17 @@
 var enemies = {};
 var methods = {};
 
+// var Enemy = require('mongoose').model('Enemy');
+
+
+// enemies
+// { '<ROOM ID>': { '<enemy ID #1>': { '0': Object, '1': Object, '2': Object } } }
+//
+// where Object = { 
+//        pos: [x,y]
+//        health: 5,
+//       }
+
 methods.debug = function(room, dbId, enemyId) {
   console.log('debug', room, dbId, enemyId);
   if (room === void 0) {

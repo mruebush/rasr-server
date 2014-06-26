@@ -7,37 +7,20 @@ var handlers = {};
 
 // var io;
 
-// sample users object:
-// { user1: { room: 'name of room', x: xCoord, y: yCoord, xp:, level:}, user2: {...}, ...}
-var users = {};
+
 
 // sample rooms object:
 // { room1: 5, room2: 0, ... }
 var rooms = {}; 
 
-// enemies
-// var allEnemies = {};
 
-// var allEnemies = {};
-// allEnemies looks like:
-// { '<ROOM ID>': { '<enemy ID #1>': { '0': Object, '1': Object, '2': Object } } }
-//
-// where Object = { 
-//        pos: [x,y]
-//        health: 5,
-//       }
 
-var xpToLevel = require('./level').level;
+// var xpToLevel = require('./level').level;
 
 var enemies = require('./enemy').methods;
 var users = require('./user').methods;
 
-// console.log('API', enemies);
-
-
-
 var mongoose = require('mongoose'),
-    // Player = mongoose.model('Player'),
     Enemy = mongoose.model('Enemy');
 
 module.exports.registerAll = function(io, socket) {
@@ -179,8 +162,8 @@ module.exports.registerAll = function(io, socket) {
       });
 
     }
-    console.log('current xp ', users[user].xp);
-    console.log('total xp needed to level', xpToLevel(users[user].level));
+    // console.log('current xp ', users[user].xp);
+    // console.log('total xp needed to level', xpToLevel(users[user].level));
     serverMessage(message);
   };
 
@@ -302,9 +285,6 @@ module.exports.registerAll = function(io, socket) {
 
           callbacksFired++;
           if (callbacksFired === _len) {
-
-            console.log('sending', enemies.get(room));
-
             emitToRoom(room, room, {
               user: user,
               others: users.others(user, room),
