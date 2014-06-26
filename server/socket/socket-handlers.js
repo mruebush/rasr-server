@@ -312,6 +312,8 @@ module.exports.registerAll = function(io, socket) {
       user: user
     });
 
+    enemies.unattack(users.get(user), room);
+
     socket.leave(room);
     console.log(user + ' left ' + room);
   };
