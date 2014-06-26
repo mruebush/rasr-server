@@ -199,157 +199,120 @@ module.exports.registerAll = function(io, socket) {
     } 
   };
 
+  handlers.shoot = function(data) {
+    emitToRoom(data.mapId, 'shoot', data);
+  };
+
+  handlers.stopEnemy = function(data) {
+    if (allEnemies[data.room]) {
+      if (allEnemies[data.room][data._id]) {
+        if (allEnemies[data.room][data._id][data.enemy]) {
+          allEnemies[data.room][data._id][data.enemy].position[0] = data.x;
+          allEnemies[data.room][data._id][data.enemy].position[1] = data.y;
+        }
+      }
+    }
+  };
+
+  handlers.join = function(data) {
+
+    var room = data.mapId;
+    var user = data.user;
+    var x = data.x;
+    var y = data.y;
+    var enemies = data.enemies;
+
+    socket.join(room);
+
+    // rooms[room] && rooms[room]++;
+    // rooms[room] = rooms[room] || 1;
+
+    users[user] = extend({
+      name: user,
+      room: room,
+      x: x,
+      y: y
+    }, users[user]);
+
+    console.log(user + ' joined ' + room + ' in ' + x + ',' + y);
+    
+    if (enemies.length === 0) {
+
+      console.log('no enemies in room');
+
+      emitToRoom(room, {
+        user: user,
+        others: getOtherUsersInRoom(room, user),
+        x: x,
+        y: y
+      });
+
+    } else if (allEnemies[room]) {
+
+      console.log('got enemies in memory.. ');
+
+      emitToRoom(room, {
+        user: user,
+        others: getOtherUsersInRoom(room, user),
+        x: x,
+        y: y,
+        enemies: allEnemies[room]
+      });
+
+    } else {
+
+      console.log('querying db for enemies');
+      allEnemies[room] = {};
+      for (var i = 0, _len = enemies.length; i < _len; i++) {
+
+        var monsterId = data.enemies[i].id;
+        
+        allEnemies[room][monsterId] = {};
+
+        for (var j = 0, _len2 = enemies[i].count; j < _len2; j++) {
+          allEnemies[room][monsterId][j] = {};
+          allEnemies[room][monsterId][j].position = data.positions[monsterId][j];
+        }
+      }
+
+      var callbacksFired = 0;
+
+      for (var i = 0, _len = enemies.length; i < _len; i++) {
+
+        var count = enemies[i].count;
+        var enemyId = enemies[i].id;
+
+        getEnemyData(enemyId).then(function(result){
+
+          pushInfo(allEnemies[room][enemyId], {
+            health: result.health,
+            name: result.name,
+            _id: result._id,
+            png: result.png,
+            speed: result.speed,
+            xp: result.xp,
+            attacking: false
+          });
+
+          callbacksFired++;
+          if (callbacksFired === _len) {
+
+            emitToRoom(room, {
+              user: user,
+              others: getOtherUsersInRoom(room, user),
+              x: x,
+              y: y,
+              enemies: allEnemies[room]
+            });
+          }
+        });
+      }
+    }
+  };
+
 
 };
 
-
-    socket.on('damageEnemy', function(data) {
-
-
-    });
-
-
-
-    socket.on('logout', function(data) {
-
-      logoutUser({
-        user: data.user,
-      });
-
-      // console.log(data.user + ' logs out at ' + data.x + ',' + data.y + ' in ' + data.mapId);
-
-      // var userData = users[data.user];
-
-      // saveUserData(data.user, userData);
-
-      // delete users[data.user];
-
-    });
-
-    socket.on('shoot', function(data) {
-
-      // console.log(data.user + ' shooting in map ' + data.mapId + ' at ' + data.x + ',' + data.y );
-
-      io.in(data.mapId).emit('shoot', data);
-
-    });
-
-    socket.on('stopEnemy', function(data) {
-      if (allEnemies[data.room]) {
-        if (allEnemies[data.room][data._id]) {
-          if (allEnemies[data.room][data._id][data.enemy]) {
-            allEnemies[data.room][data._id][data.enemy].position[0] = data.x;
-            allEnemies[data.room][data._id][data.enemy].position[1] = data.y;
-          }
-        }
-      }
-
-      // console.log('allenemies', allEnemies[data.room][data._id][data.enemy].position);
-      
-    });
-
-    socket.on('troll', function(){
-      console.log(users);
-    });
-
-    socket.on('join', function(data) {
-
-      var room = data.mapId;
-      var user = data.user;
-      var x = data.x;
-      var y = data.y;
-      var enemies = data.enemies;
-
-      socket.join(room);
-
-      rooms[room] && rooms[room]++;
-      rooms[room] = rooms[room] || 1;
-
-      users[user] = extend({
-        name: user,
-        room: room,
-        x: x,
-        y: y
-      }, users[user]);
-
-      console.log(user + ' joined ' + room + ' in ' + x + ',' + y);
-      
-      if (enemies.length === 0) {
-
-        console.log('no enemies in room');
-
-        io.in(room).emit(room, {
-          user: user,
-          others: getOtherUsersInRoom(room, user),
-          x: x,
-          y: y
-        });
-
-      } else if (allEnemies[room]) {
-
-        console.log('got enemies in memory.. ');
-
-        io.in(room).emit(room, {
-          user: user,
-          others: getOtherUsersInRoom(room, user),
-          x: x,
-          y: y,
-          enemies: allEnemies[room]
-        });
-
-      } else {
-
-        console.log('querying db for enemies');
-        allEnemies[room] = {};
-        for (var i = 0, _len = enemies.length; i < _len; i++) {
-
-          var monsterId = data.enemies[i].id;
-          
-          allEnemies[room][monsterId] = {};
-
-          for (var j = 0, _len2 = enemies[i].count; j < _len2; j++) {
-            allEnemies[room][monsterId][j] = {};
-            allEnemies[room][monsterId][j].position = data.positions[monsterId][j];
-          }
-        }
-
-        var callbacksFired = 0;
-
-        for (var i = 0, _len = enemies.length; i < _len; i++) {
-
-          var count = enemies[i].count;
-          var enemyId = enemies[i].id;
-
-          getEnemyData(enemyId).then(function(result){
-
-            pushInfo(allEnemies[room][enemyId], {
-              health: result.health,
-              name: result.name,
-              _id: result._id,
-              png: result.png,
-              speed: result.speed,
-              xp: result.xp,
-              attacking: false
-            });
-
-            callbacksFired++;
-            if (callbacksFired === _len) {
-
-              io.in(room).emit(room, {
-                user: user,
-                others: getOtherUsersInRoom(room, user),
-                x: x,
-                y: y,
-                enemies: allEnemies[room]
-              });
-
-              // console.log('enemies in room', allEnemies[room]);
-
-            }
-          });
-        }
-      }
-    });
 
     socket.on('leave', function(data) {
       var user = data.user;

@@ -45,9 +45,14 @@ module.exports.init = function(io) {
     socket.on('login', handlers.login);
     socket.on('disconnect', handlers.disconnect);
     socket.on('gameOver', handlers.gameOver);
-    socket.on('enemyMoving', handler.enemyMoving);
-    socket.on('enemyDies', handler.enemyDies);
-    socket.on('damageEnemy', handler.damageEnemy);
+    socket.on('enemyMoving', handlers.enemyMoving);
+    socket.on('enemyDies', handlers.enemyDies);
+    socket.on('damageEnemy', handlers.damageEnemy);
+    socket.on('logout', handlers.disconnect);
+    socket.on('shoot', handlers.shoot);
+    socket.on('stopEnemy', handlers.stopEnemy);
+    socket.on('join', handlers.join);
+    
 
   });
 
