@@ -221,7 +221,7 @@ module.exports.registerAll = function(io, socket) {
 
       if (distance([data.x, data.y],[enemy.attacking.x, enemy.attacking.y]) > 37) {
 
-        var num = calcDirection(enemy);
+        var num = enemies.calcDirection(enemy);
         emitToRoom(room, 'enemyMoving', {
           dir: num,
           dbId: dbId,
@@ -284,15 +284,19 @@ module.exports.registerAll = function(io, socket) {
   };
 
   handlers.damageEnemy = function(data) {
-    console.log(data.user + ' damages enemy ' + data.enemy + ' in ' + data.room);
+    // console.log('data', data)
     var room = data.room;
-    var dbId = data.dbId;
+    var dbId = data._id;
     var enemyId = data.enemy;
+    var user = data.user;
+    console.log(user + ' damages enemy ' + enemyId + ' in ' + room);
+    console.log(room, dbId, enemyId);
 
     enemies.damage(room, dbId, enemyId);
-    enemies.attack(room, dbId, enemyId, user);
+    enemies.attack(room, dbId, enemyId, users[user]);
 
-    emitToRoom(data.room, 'damageEnemy', {
+    console.log(data.enemy);
+    emitToRoom(room, 'damageEnemy', {
       serverId: data.enemy
     });
   };

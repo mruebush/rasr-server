@@ -91,6 +91,7 @@ methods.attack = function(room, dbId, enemyId, user) {
   var enemy = methods.get(room, dbId, enemyId);
   if (enemy) {
     enemy.attacking = user;
+    console.log(enemy);
   }
 };
 
