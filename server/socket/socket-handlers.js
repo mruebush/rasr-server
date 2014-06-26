@@ -29,7 +29,7 @@ var allEnemies = {};
 
 var xpToLevel = require('./level').level;
 
-var enemy = require('./enemy');
+var enemies = require('./enemy');
 
 
 
@@ -46,12 +46,12 @@ module.exports.registerAll = function(io, socket) {
   var movePassiveEnemies = function() {
 
     var nums = [];
-    var enemiesRoom = enemy.get(room);
+    var enemiesRoom = enemies.get(room);
     for (var room in rooms) {
-      if (rooms[room] && enemy.exists(room)) {
-        for (var dbId in enemy.get(room)) {
-          for (var id in enemy.get(room, dbId)){
-            if (!enemy.isAttacking(room, dbId, id)) {
+      if (rooms[room] && enemies.exists(room)) {
+        for (var dbId in enemies.get(room)) {
+          for (var id in enemies.get(room, dbId)){
+            if (!enemies.isAttacking(room, dbId, id)) {
               nums.push({
                 dir: Math.floor(Math.random() * 4),
                 passive: true
@@ -74,45 +74,6 @@ module.exports.registerAll = function(io, socket) {
   };
 
   var passiveEnemyTimer = setInterval(movePassiveEnemies, 2500);
-
-  var calcDirection = function(enemy) {
-
-    var enemyX = enemy.position[0];
-    var enemyY = enemy.position[1];
-
-    var playerX = enemy.attacking.x;
-    var playerY = enemy.attacking.y;
-
-    var eps = 40;
-
-    // directions:
-    // 0 -> up
-    // 1 -> down
-    // 2 -> left
-    // 3 -> right
-
-    var xdiff = playerX - enemyX;
-    var ydiff = playerY - enemyY;
-
-    if (Math.abs(xdiff) > eps) {
-
-      if (xdiff > 0) {
-        return 3;
-      } else {
-        return 2;
-      }
-
-    } else {
-
-      if (ydiff > 0) {
-        return 1;
-      } else {
-        return 0;
-      }
-
-    }
-
-  };
 
   var saveUserData = function(username, userData) {
 
@@ -150,21 +111,6 @@ module.exports.registerAll = function(io, socket) {
 
   var distance = function(enemy, player) {
     return Math.sqrt(Math.pow(enemy[0] - player[0], 2) + Math.pow(enemy[1] - player[1], 2));
-  };
-
-
-  var pushInfo = function(enemies, data) {
-
-    for (var key in enemies) {
-      enemies[key].health = data.health;
-      enemies[key].name = data.name;
-      enemies[key]._id = data._id;
-      enemies[key].png = data.png;
-      enemies[key].speed = data.speed;
-      enemies[key].xp = data.xp;
-      enemies[key].attacking = data.attacking;
-     }
-
   };
 
   var extend = function(from, to) {
@@ -264,25 +210,21 @@ module.exports.registerAll = function(io, socket) {
     var dbId = data._id;
     var enemyId = data.enemy;
 
-    if (allEnemies[room]) {
-      if (allEnemies[room][dbId]) {
-        if (allEnemies[room][dbId][enemyId]) {
+    if (enemies.exist(room, dbId, enemyId)) {
 
-          var enemy = allEnemies[room][dbId][enemyId];
+      var enemy = enemies.get(room, dbId, enemyId);
 
-          enemy.position[0] = data.x;
-          enemy.position[1] = data.y;
+      enemy.position[0] = data.x;
+      enemy.position[1] = data.y;
 
-          if (distance([data.x, data.y],[enemy.attacking.x, enemy.attacking.y]) > 37) {
+      if (distance([data.x, data.y],[enemy.attacking.x, enemy.attacking.y]) > 37) {
 
-            var num = calcDirection(allEnemies[room][dbId][enemyId]);
-            emitToRoom(room, 'enemyMoving', {
-              dir: num,
-              dbId: dbId,
-              serverId: enemyId
-            });
-          }
-        }
+        var num = calcDirection(enemy);
+        emitToRoom(room, 'enemyMoving', {
+          dir: num,
+          dbId: dbId,
+          serverId: enemyId
+        });
       }
     }
   };
