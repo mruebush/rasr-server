@@ -37,7 +37,7 @@ var users = require('./user').methods;
 
 
 var mongoose = require('mongoose'),
-    Player = mongoose.model('Player'),
+    // Player = mongoose.model('Player'),
     Enemy = mongoose.model('Enemy');
 
 module.exports.registerAll = function(io, socket) {
@@ -78,31 +78,16 @@ module.exports.registerAll = function(io, socket) {
 
   var passiveEnemyTimer = setInterval(movePassiveEnemies, 2500);
 
-  var saveUserData = function(username, userData) {
-
-    Player.findOneAndUpdate({
-      username: username
-    }, {
-      x: userData.x,
-      y: userData.y,
-      mapId: userData.room,
-      level: userData.level,
-        xp: userData.xp
-    }, null, function(){
-      console.log(arguments);
-    });
-
-  };
 
   var logoutUser = function(data) {
+    var user = data.user;
 
-    if (users[data.user]) {
+    if (users.exist(user)) {
 
-      var user = data.user;
-      var userData = users[user];
-      var room = users[user].room;
-      saveUserData(user, userData);
-      delete users[user];
+      var userData = users.get(user);
+      var room = userData.room;
+      users.save(user, userData);
+      users.delete(user);
 
       emitToRoom(room, 'leave', {
         user: user
@@ -128,26 +113,6 @@ module.exports.registerAll = function(io, socket) {
 
   };
 
-  var getOtherUsersInRoom = function(room, user) {
-    var res = [];
-    var obj = {};
-
-    for (var otherUser in users) {
-
-      // users[otherUser].room is sometimes an object ! (dont know why)
-      var fixed = JSON.stringify(users[otherUser].room).replace(/"/g,'');
-
-      if (fixed === room && otherUser !== user) {
-        
-        obj = users[otherUser];
-        obj.user = otherUser;
-        res.push(obj);
-        
-      }
-    }
-
-    return res;
-  };
 
   var serverMessage = function(message) {
     message = '[' + new Date().toDateString() + '] ' + message;
