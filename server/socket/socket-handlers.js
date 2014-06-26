@@ -31,7 +31,7 @@ var xpToLevel = require('./level').level;
 
 var enemies = require('./enemy').methods;
 
-console.log('API', enemies);
+// console.log('API', enemies);
 
 
 
@@ -48,9 +48,9 @@ module.exports.registerAll = function(io, socket) {
   var movePassiveEnemies = function() {
 
     var nums = [];
-    var enemiesRoom = enemies.get(room);
+
     for (var room in rooms) {
-      if (rooms[room] && enemies.exists(room)) {
+      if (rooms[room] && enemies.exist(room)) {
         for (var dbId in enemies.get(room)) {
           for (var id in enemies.get(room, dbId)){
             if (!enemies.isAttacking(room, dbId, id)) {
@@ -320,8 +320,8 @@ module.exports.registerAll = function(io, socket) {
 
     socket.join(room);
 
-    // rooms[room] && rooms[room]++;
-    // rooms[room] = rooms[room] || 1;
+    rooms[room] && rooms[room]++;
+    rooms[room] = rooms[room] || 1;
 
     users[user] = extend({
       name: user,
