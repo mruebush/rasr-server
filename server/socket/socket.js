@@ -51,6 +51,10 @@ module.exports.registerAll = function(io, socket) {
     io.in(room).emit(event, data);
   };
 
+  var emitToAll = function(event, data) {
+    io.emit(event, data);
+  };
+
   handlers.login = function(user) {
 
     socket.user = user;
@@ -115,45 +119,32 @@ module.exports.registerAll = function(io, socket) {
     }
   };
 
+  handlers.resetAll = function(data) {
+    users[data.user].xp = 0;
+    users[data.user].level = 1;
+  };
+
+  handlers.freeXp = function(data) {
+    var user = data.user;
+    users[data.user].xp += data.xp;
+    console.log("Awarded " + data.xp + " free xp to " + user);
+
+    var message = user + ' was awarded ' + data.xp + ' free xp';
+
+    if (users[user].xp >= xpToLevel(users[user].level)) {
+      users[user].level++;
+      users[user].xp = 0;
+      message = user + ' reached level ' + users[user].level; 
+    }
+    serverMessage(message);
+    emitToAll('levelUp', void 0);
+  };
+
 
 };
 
-    socket.on('enemyMoving', function(data) {
-
-        
-    });
-
-    socket.on('resetAll', function(data) {
-      users[data.user].xp = 0;
-      users[data.user].level = 1;
-    });
-
     socket.on('freeXp', function(data) {
 
-      var user = data.user;
-      users[data.user].xp += data.xp;
-      console.log("Awarded " + data.xp + " free xp to " + user);
-
-      var message = user + ' was awarded ' + data.xp + ' free xp';
-
-      if (users[user].xp >= xpToLevel(users[user].level)) {
-
-        users[user].level++;
-        users[user].xp = 0;
-        message = user + ' reached level ' + users[user].level;
-        
-      }
-
-      io.emit('message', {
-        user: 'Server',
-        message: message
-      });
-
-      // console.log(speedBoost(users[user].level));
-
-      io.emit('levelUp', {
-        // speed: speedBoost(users[user].level)
-      });
 
     });
     
