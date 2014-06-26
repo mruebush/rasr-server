@@ -121,6 +121,15 @@ methods.awardXp = function(username, xp) {
   return levelUp;
 };
 
+methods.extend = function(username, properties) {
+  var user = methods.get(username);
+  properties = properties || {};
+
+  for (var key in user) {
+    user[key] = properties[key];
+  }
+};
+
 methods.freeXp = function(username, xp) {
     var user = methods.get(username);
     user.xp += xp;
@@ -141,24 +150,5 @@ methods.freeXp = function(username, xp) {
 methods.xpToLevel = function(level) {
   return Math.floor(Math.exp(0.5 * level));
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 module.exports.methods = methods;

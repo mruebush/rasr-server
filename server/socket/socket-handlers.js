@@ -82,19 +82,6 @@ module.exports.registerAll = function(io, socket) {
     return Math.sqrt(Math.pow(enemy[0] - player[0], 2) + Math.pow(enemy[1] - player[1], 2));
   };
 
-  var extend = function(from, to) {
-
-    to = to || {};
-
-    for (var key in from) {
-      to[key] = from[key];
-    }
-
-    return to;
-
-  };
-
-
   var serverMessage = function(message) {
     message = '[' + new Date().toDateString() + '] ' + message;
     io.emit('message', {
@@ -183,7 +170,6 @@ module.exports.registerAll = function(io, socket) {
     emitToRoom(room, 'derenderEnemy', data);
 
     var message = user + ' has slain a ' + data.enemyName + ' for ' + xp + ' exp!';
-    // users[user].xp += data.xp;
     var levelUp = users.awardXp(user, xp);
 
     if (levelUp) {
@@ -208,7 +194,7 @@ module.exports.registerAll = function(io, socket) {
     console.log(room, dbId, enemyId);
 
     enemies.damage(room, dbId, enemyId);
-    enemies.attack(room, dbId, enemyId, users[user]);
+    enemies.attack(room, dbId, enemyId, users.get(user));
 
     console.log(data.enemy);
     emitToRoom(room, 'damageEnemy', {
@@ -242,12 +228,14 @@ module.exports.registerAll = function(io, socket) {
     rooms[room] && rooms[room]++;
     rooms[room] = rooms[room] || 1;
 
-    users[user] = extend({
+
+    users.extend(user, {
       name: user,
       room: room,
       x: x,
       y: y
-    }, users[user]);
+    });
+
 
     console.log(user + ' joined ' + room + ' in ' + x + ',' + y);
 
@@ -257,7 +245,7 @@ module.exports.registerAll = function(io, socket) {
 
       emitToRoom(room, room, {
         user: user,
-        others: getOtherUsersInRoom(room, user),
+        others: users.others(user, room),
         x: x,
         y: y
       });
@@ -268,7 +256,7 @@ module.exports.registerAll = function(io, socket) {
 
       emitToRoom(room, room, {
         user: user,
-        others: getOtherUsersInRoom(room, user),
+        others: users.others(user, room),
         x: x,
         y: y,
         enemies: enemies.get(room)
@@ -319,7 +307,7 @@ module.exports.registerAll = function(io, socket) {
 
             emitToRoom(room, room, {
               user: user,
-              others: getOtherUsersInRoom(room, user),
+              others: users.others(user, room),
               x: x,
               y: y,
               enemies: enemies.get(room)
