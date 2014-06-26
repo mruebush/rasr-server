@@ -36,8 +36,167 @@ var mongoose = require('mongoose'),
     Player = mongoose.model('Player'),
     Enemy = mongoose.model('Enemy');
 
-
 module.exports.registerAll = function(io, socket) {
+
+  var getEnemyData = function(enemyId) {
+    return Enemy.findByIdAsync(enemyId);
+  };
+
+  var movePassiveEnemies = function() {
+
+    var nums = [];
+    for (var room in rooms) {
+      if (rooms[room] && allEnemies[room]) {
+        for (var dbId in allEnemies[room]) {
+          for (var id in allEnemies[room][dbId]){
+            if (!allEnemies[room][dbId][id].attacking) {
+              nums.push({
+                dir: Math.floor(Math.random() * 4),
+                passive: true
+              });
+            } 
+            else {
+              nums.push({
+                dir: void 0,
+                passive: false
+              });
+            }
+          }
+        }
+        emitToRoom(room, 'move enemies',{
+          param: 'move dem enemies!',
+          nums: nums 
+        });
+      }
+    }
+  };
+
+  var passiveEnemyTimer = setInterval(movePassiveEnemies, 2500);
+
+    var calcDirection = function(enemy) {
+
+      var enemyX = enemy.position[0];
+      var enemyY = enemy.position[1];
+
+      var playerX = enemy.attacking.x;
+      var playerY = enemy.attacking.y;
+
+      var eps = 40;
+
+      // directions:
+      // 0 -> up
+      // 1 -> down
+      // 2 -> left
+      // 3 -> right
+
+      var xdiff = playerX - enemyX;
+      var ydiff = playerY - enemyY;
+
+      if (Math.abs(xdiff) > eps) {
+
+        if (xdiff > 0) {
+          return 3;
+        } else {
+          return 2;
+        }
+
+      } else {
+
+        if (ydiff > 0) {
+          return 1;
+        } else {
+          return 0;
+        }
+
+      }
+
+    };
+
+  var saveUserData = function(username, userData) {
+
+    Player.findOneAndUpdate({
+      username: username
+    }, {
+      x: userData.x,
+      y: userData.y,
+      mapId: userData.room,
+      level: userData.level,
+        xp: userData.xp
+    }, null, function(){
+      console.log(arguments);
+    });
+
+  };
+
+  var logoutUser = function(data) {
+
+    if (users[data.user]) {
+
+      var user = data.user;
+      var userData = users[user];
+      var room = users[user].room;
+      saveUserData(user, userData);
+      delete users[user];
+
+      emitToRoom(room, leave, {
+        user: user
+      });
+      
+    }
+
+  };
+
+  var distance = function(enemy, player) {
+    return Math.sqrt(Math.pow(enemy[0] - player[0], 2) + Math.pow(enemy[1] - player[1], 2));
+  };
+
+
+  var pushInfo = function(enemies, data) {
+
+    for (var key in enemies) {
+      enemies[key].health = data.health;
+      enemies[key].name = data.name;
+      enemies[key]._id = data._id;
+      enemies[key].png = data.png;
+      enemies[key].speed = data.speed;
+      enemies[key].xp = data.xp;
+      enemies[key].attacking = data.attacking;
+     }
+
+  };
+
+  var extend = function(from, to) {
+
+    to = to || {};
+
+    for (var key in from) {
+      to[key] = from[key];
+    }
+
+    return to;
+
+  };
+
+  var getOtherUsersInRoom = function(room, user) {
+    var res = [];
+    var obj = {};
+
+    for (var otherUser in users) {
+
+      // users[otherUser].room is sometimes an object ! (dont know why)
+      var fixed = JSON.stringify(users[otherUser].room).replace(/"/g,'');
+
+      if (fixed === room && otherUser !== user) {
+        
+        obj = users[otherUser];
+        obj.user = otherUser;
+        res.push(obj);
+        
+      }
+    }
+
+    return res;
+  };
 
   var serverMessage = function(message) {
     message = '[' + new Date().toDateString + '] ' + message;
@@ -359,165 +518,7 @@ module.exports.registerAll = function(io, socket) {
 
 
 
-var getEnemyData = function(enemyId) {
-  return Enemy.findByIdAsync(enemyId);
-};
-
-var movePassiveEnemies = function() {
-
-  var nums = [];
-  for (var room in rooms) {
-    if (rooms[room] && allEnemies[room]) {
-      for (var dbId in allEnemies[room]) {
-        for (var id in allEnemies[room][dbId]){
-          if (!allEnemies[room][dbId][id].attacking) {
-            nums.push({
-              dir: Math.floor(Math.random() * 4),
-              passive: true
-            });
-          } 
-          else {
-            nums.push({
-              dir: void 0,
-              passive: false
-            });
-          }
-        }
-      }
-      emitToRoom(room, 'move enemies',{
-        param: 'move dem enemies!',
-        nums: nums 
-      });
-    }
-  }
-
-};
-
-var passiveEnemyTimer = setInterval(movePassiveEnemies, 2500);
-
-var calcDirection = function(enemy) {
-
-  var enemyX = enemy.position[0];
-  var enemyY = enemy.position[1];
-
-  var playerX = enemy.attacking.x;
-  var playerY = enemy.attacking.y;
-
-  var eps = 40;
-
-  // directions:
-  // 0 -> up
-  // 1 -> down
-  // 2 -> left
-  // 3 -> right
-
-  var xdiff = playerX - enemyX;
-  var ydiff = playerY - enemyY;
-
-  if (Math.abs(xdiff) > eps) {
-
-    if (xdiff > 0) {
-      return 3;
-    } else {
-      return 2;
-    }
-
-  } else {
-
-    if (ydiff > 0) {
-      return 1;
-    } else {
-      return 0;
-    }
-
-  }
-
-};
-
-var saveUserData = function(username, userData) {
-
-  Player.findOneAndUpdate({
-    username: username
-  }, {
-    x: userData.x,
-    y: userData.y,
-    mapId: userData.room,
-    level: userData.level,
-      xp: userData.xp
-  }, null, function(){
-    console.log(arguments);
-  });
-
-};
-
-var logoutUser = function(data) {
-
-  if (users[data.user]) {
-
-    var user = data.user;
-    var userData = users[user];
-    var room = users[user].room;
-    saveUserData(user, userData);
-    delete users[user];
-
-    emitToRoom(room, leave, {
-      user: user
-    });
-    
-  }
-
-};
-
-var distance = function(enemy, player) {
-  return Math.sqrt(Math.pow(enemy[0] - player[0], 2) + Math.pow(enemy[1] - player[1], 2));
-};
 
 
-var pushInfo = function(enemies, data) {
-
-  for (var key in enemies) {
-    enemies[key].health = data.health;
-    enemies[key].name = data.name;
-    enemies[key]._id = data._id;
-    enemies[key].png = data.png;
-    enemies[key].speed = data.speed;
-    enemies[key].xp = data.xp;
-    enemies[key].attacking = data.attacking;
-   }
-
-};
-
-var extend = function(from, to) {
-
-  to = to || {};
-
-  for (var key in from) {
-    to[key] = from[key];
-  }
-
-  return to;
-
-};
-
-var getOtherUsersInRoom = function(room, user) {
-  var res = [];
-  var obj = {};
-
-  for (var otherUser in users) {
-
-    // users[otherUser].room is sometimes an object ! (dont know why)
-    var fixed = JSON.stringify(users[otherUser].room).replace(/"/g,'');
-
-    if (fixed === room && otherUser !== user) {
-      
-      obj = users[otherUser];
-      obj.user = otherUser;
-      res.push(obj);
-      
-    }
-  }
-
-  return res;
-};
 
 
