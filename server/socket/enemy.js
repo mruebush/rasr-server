@@ -81,6 +81,25 @@ methods.initRoom = function(room) {
   enemies[room] = {};
 };
 
+methods.unattack = function(user, room) {
+  var enemies = methods.get(room);
+  var dbIds = [];
+
+  for (var dbId in enemies) {
+    dbIds.push(dbId);
+  }
+
+  for (var i = 0, _len = dbIds.length; i < _len; i++) {
+    enemies = methods.get(room, dbIds[i]);
+
+    for (var enemyId in enemies) {
+      if (enemies[enemyId].attacking === user) {
+        delete enemies[enemyId].attacking;
+      }
+    }
+  }
+};
+
 
 methods.initDbId = function(room, dbId) {
   enemies[room][dbId] = {};
