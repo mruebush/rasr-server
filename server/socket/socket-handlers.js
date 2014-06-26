@@ -27,10 +27,11 @@ var allEnemies = {};
 //        health: 5,
 //       }
 
-// socket listeners w/ callbacks from another file
-
 var xpToLevel = require('./level').level;
-// var speedBoost = require('./level').speed;
+
+var enemyMethods = require('./enemy');
+
+
 
 var mongoose = require('mongoose'),
     Player = mongoose.model('Player'),
@@ -73,44 +74,44 @@ module.exports.registerAll = function(io, socket) {
 
   var passiveEnemyTimer = setInterval(movePassiveEnemies, 2500);
 
-    var calcDirection = function(enemy) {
+  var calcDirection = function(enemy) {
 
-      var enemyX = enemy.position[0];
-      var enemyY = enemy.position[1];
+    var enemyX = enemy.position[0];
+    var enemyY = enemy.position[1];
 
-      var playerX = enemy.attacking.x;
-      var playerY = enemy.attacking.y;
+    var playerX = enemy.attacking.x;
+    var playerY = enemy.attacking.y;
 
-      var eps = 40;
+    var eps = 40;
 
-      // directions:
-      // 0 -> up
-      // 1 -> down
-      // 2 -> left
-      // 3 -> right
+    // directions:
+    // 0 -> up
+    // 1 -> down
+    // 2 -> left
+    // 3 -> right
 
-      var xdiff = playerX - enemyX;
-      var ydiff = playerY - enemyY;
+    var xdiff = playerX - enemyX;
+    var ydiff = playerY - enemyY;
 
-      if (Math.abs(xdiff) > eps) {
+    if (Math.abs(xdiff) > eps) {
 
-        if (xdiff > 0) {
-          return 3;
-        } else {
-          return 2;
-        }
-
+      if (xdiff > 0) {
+        return 3;
       } else {
-
-        if (ydiff > 0) {
-          return 1;
-        } else {
-          return 0;
-        }
-
+        return 2;
       }
 
-    };
+    } else {
+
+      if (ydiff > 0) {
+        return 1;
+      } else {
+        return 0;
+      }
+
+    }
+
+  };
 
   var saveUserData = function(username, userData) {
 
