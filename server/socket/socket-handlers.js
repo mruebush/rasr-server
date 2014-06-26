@@ -92,6 +92,10 @@ module.exports.registerAll = function(io, socket) {
     users.logout({
       user: socket.user
     });
+
+    emitToAll('leave', {
+      user: user
+    });
   };
 
   handlers.gameOver = function(data) {
@@ -116,15 +120,18 @@ module.exports.registerAll = function(io, socket) {
       enemy.position[0] = data.x;
       enemy.position[1] = data.y;
 
-      if (distance([data.x, data.y],[enemy.attacking.x, enemy.attacking.y]) > 37) {
+      if (enemy.attacking) {
+        if (distance([data.x, data.y],[enemy.attacking.x, enemy.attacking.y]) > 37) {
 
-        var num = enemies.calcDirection(enemy);
-        emitToRoom(room, 'enemyMoving', {
-          dir: num,
-          dbId: dbId,
-          serverId: enemyId
-        });
+          var num = enemies.calcDirection(enemy);
+          emitToRoom(room, 'enemyMoving', {
+            dir: num,
+            dbId: dbId,
+            serverId: enemyId
+          });
+        }
       }
+
     }
   };
 
@@ -310,20 +317,18 @@ module.exports.registerAll = function(io, socket) {
   };
 
   handlers.move = function(data) {
-    var emitter = data.user;
+    var user = data.user;
+    var room = data.room;
+    var dir = data.dir;
+    
+    var x = data.x;
+    var y = data.y;
 
-    if (users[emitter]) {
-      
-      var dir = data.dir;
-      var room = data.room;
-      var x = data.x;
-      var y = data.y;
-      
-      users[emitter].x = x;
-      users[emitter].y = y;
+    var set = users.setPosition(user, [x, y]);
 
+    if (set) {
       emitToRoom(room, 'move', {
-        user: emitter,
+        user: user,
         dir: dir,
         x: x,
         y: y

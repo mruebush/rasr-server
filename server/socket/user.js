@@ -48,11 +48,11 @@ methods.save = function(username, data) {
   Player.findOneAndUpdate({
     username: username
   }, {
-    x: userData.x,
-    y: userData.y,
-    mapId: userData.room,
-    level: userData.level,
-      xp: userData.xp
+    x: data.x,
+    y: data.y,
+    mapId: data.room,
+    level: data.level,
+      xp: data.xp
   }, null, function(){
     console.log(arguments);
   });
@@ -87,12 +87,7 @@ methods.logout = function(data) {
     var userData = methods.get(user);
     var room = userData.room;
     methods.save(user, userData);
-    methods.delete(user);
-
-    emitToRoom(room, 'leave', {
-      user: user
-    });
-    
+    methods.delete(user); 
   }
 };
 
@@ -100,6 +95,16 @@ methods.gameOver = function(username, data) {
   var user = methods.get(username);
   user.xp *= 0.2;
   methods.save(username, data);
+};
+
+methods.setPosition = function(username, position) {
+  var user = methods.get(username);
+
+  if (user) {
+    user.x = position[0];
+    user.y = position[1];
+    return true;
+  }
 };
 
 methods.resetAll = function(username) {
