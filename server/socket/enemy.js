@@ -33,6 +33,22 @@ methods.delete = function(room, dbId, enemyId) {
   delete enemies[room][dbId][enemyId];
 };
 
+methods.damage = function(room, dbId, enemyId) {
+  var enemy = methods.get(room, dbId, enemyId);
+  if (enemy) {
+    enemy.health--;
+  }
+};
+
+methods.attack = function(room, dbId, enemyId, user) {
+  var enemy = methods.get(room, dbId, enemyId);
+  if (enemy) {
+    enemy.attacking = user;
+  }
+};
+
+
+
 
 methods.exist = function(room, dbId, enemyId) {
   return !!methods.get(room, dbId, enemyId);

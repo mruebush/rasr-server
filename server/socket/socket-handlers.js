@@ -283,22 +283,16 @@ module.exports.registerAll = function(io, socket) {
 
   handlers.damageEnemy = function(data) {
     console.log(data.user + ' damages enemy ' + data.enemy + ' in ' + data.room);
-    
-    if (allEnemies[data.room]) {
-      if (allEnemies[data.room][data._id]) {
+    var room = data.room;
+    var dbId = data.dbId;
+    var enemyId = data.enemy;
 
-        if (allEnemies[data.room][data._id][data.enemy]) {
+    enemies.damage(room, dbId, enemyId);
+    enemies.attack(room, dbId, enemyId, user);
 
-          allEnemies[data.room][data._id][data.enemy].health--;
-          allEnemies[data.room][data._id][data.enemy].attacking = users[data.user];
-
-          emitToRoom(data.room, 'damageEnemy', {
-            serverId: data.enemy
-          });
-        }
-
-      }
-    } 
+    emitToRoom(data.room, 'damageEnemy', {
+      serverId: data.enemy
+    });
   };
 
   handlers.shoot = function(data) {
