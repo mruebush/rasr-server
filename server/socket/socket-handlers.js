@@ -159,7 +159,7 @@ module.exports.registerAll = function(io, socket) {
   var emitToRoom = function(room, event, data) {
     io.in(room).emit(event, data);
   };
-
+//emitToRoom()
   var emitToAll = function(event, data) {
     io.emit(event, data);
   };
@@ -336,7 +336,7 @@ module.exports.registerAll = function(io, socket) {
 
       console.log('no enemies in room');
 
-      emitToRoom(room, {
+      emitToRoom(room, room, {
         user: user,
         others: getOtherUsersInRoom(room, user),
         x: x,
@@ -347,7 +347,7 @@ module.exports.registerAll = function(io, socket) {
 
       console.log('got enemies in memory.. ');
 
-      emitToRoom(room, {
+      emitToRoom(room, room, {
         user: user,
         others: getOtherUsersInRoom(room, user),
         x: x,
@@ -383,10 +383,7 @@ module.exports.registerAll = function(io, socket) {
 
         getEnemyData(enemyId).then(function(result){
 
-          var troll = enemies.get(room, enemyId);
-          console.log('troll', troll);
-
-          enemies.pushInfo(troll, {
+          enemies.pushInfo(enemies.get(room, enemyId), {
             health: result.health,
             name: result.name,
             _id: result._id,
@@ -396,12 +393,12 @@ module.exports.registerAll = function(io, socket) {
             attacking: false
           });
 
-          console.log('troll', troll);
-
           callbacksFired++;
           if (callbacksFired === _len) {
 
-            emitToRoom(room, {
+            console.log('sending', enemies.get(room));
+
+            emitToRoom(room, room, {
               user: user,
               others: getOtherUsersInRoom(room, user),
               x: x,
