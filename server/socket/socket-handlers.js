@@ -162,8 +162,13 @@ module.exports.registerAll = function(io, socket) {
     var message = user + ' has slain a ' + data.enemyName + ' for ' + xp + ' exp!';
     var levelUp = users.awardXp(user, xp);
 
+    console.log(message);
+    console.log('levelUp', levelUp);
+    console.log('present xp', users.getXp(user));
+    console.log('xpToLevel', users.userXpToLevel(user))
+
     if (levelUp) {
-      message = username + ' reached level ' + user.level;
+      message = user + ' reached level ' + users.level(user) + '!';
       emitToRoom(room, 'levelUp', {
         user: user
       });
@@ -180,13 +185,13 @@ module.exports.registerAll = function(io, socket) {
     var dbId = data._id;
     var enemyId = data.enemy;
     var user = data.user;
+
     console.log(user + ' damages enemy ' + enemyId + ' in ' + room);
-    console.log(room, dbId, enemyId);
+    
 
     enemies.damage(room, dbId, enemyId);
     enemies.attack(room, dbId, enemyId, users.get(user));
 
-    console.log(data.enemy);
     emitToRoom(room, 'damageEnemy', {
       serverId: data.enemy
     });
@@ -213,13 +218,15 @@ module.exports.registerAll = function(io, socket) {
     var y = data.y;
     var creatures = data.enemies;
 
+    users.getXp(user);
+
     socket.join(room);
 
     rooms[room] && rooms[room]++;
     rooms[room] = rooms[room] || 1;
 
 
-    users.extend(user, {
+    users.extend(users.get(user), {
       name: user,
       room: room,
       x: x,
@@ -242,7 +249,7 @@ module.exports.registerAll = function(io, socket) {
 
     } else if (enemies.exist(room)) {
 
-      console.log('got enemies in memory.. ');
+      console.log('got enemies in memory.. ', enemies.get(room));
 
       emitToRoom(room, room, {
         user: user,
