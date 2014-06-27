@@ -24,8 +24,6 @@ var helpers = {
     // boolean to decrease number of calls to database
     var backsideConnection = false
 
-    console.log(fromScreenId, toScreenId, doneDir, toGoDir, 'placementHelper)');
-
     return helpers.peripheralRefs(fromScreenId, toScreenId, doneDir, toGoDir) // should return (connectionScreenId, toScreenId)
     .then(function(peripheralScreenId) {
       return helpers.peripheralRefs(peripheralScreenId, toScreenId, toGoOppositeDirection, doneDir) // should return (endPeriph, toScreenId)
