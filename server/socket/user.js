@@ -54,7 +54,8 @@ methods.save = function(username, data) {
     level: data.level,
       xp: data.xp
   }, null, function(){
-    console.log(arguments);
+    console.log('save', arguments[1]);
+    console.log('error', arguments[0]);
   });
 };
 
@@ -66,8 +67,8 @@ methods.login = function(user) {
 
     users[user] = {
       room: result.mapId,
-      png: result.png,
-      speed: result.speed,
+      // png: result.png,
+      // speed: result.speed,
       xp: +result.xp,
       level: +result.level,
       x: result.x,
@@ -114,10 +115,13 @@ methods.resetAll = function(username) {
 };
 
 methods.awardXp = function(username, xp) {
+
+  console.log('awarding xp', typeof xp);
   var message;
   var levelUp;
   var user = methods.get(username);
-  user.xp += xp;
+  user.xp = user.xp + xp;
+  console.log('to user', user)
 
   if (user.xp >= methods.xpToLevel(user.level)) {
 
@@ -128,6 +132,23 @@ methods.awardXp = function(username, xp) {
   } 
 
   return levelUp;
+};
+
+methods.level = function(username) {
+  var user = methods.get(username);
+
+  if (user) {
+    return user.level;
+  }
+};
+
+methods.getXp = function(username) {
+  var user = methods.get(username);
+  console.log('getting xp', user);
+
+  if (user) {
+    return user.xp;
+  }
 };
 
 methods.extend = function(username, properties) {
@@ -154,6 +175,14 @@ methods.freeXp = function(username, xp) {
     }
 
     return message;
+};
+
+methods.userXpToLevel = function(username) {
+  var user = methods.get(username);
+
+  if (user) {
+    return methods.xpToLevel(user.level);
+  }
 };
 
 methods.xpToLevel = function(level) {
