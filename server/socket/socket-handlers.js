@@ -162,11 +162,6 @@ module.exports.registerAll = function(io, socket) {
     var message = user + ' has slain a ' + data.enemyName + ' for ' + xp + ' exp!';
     var levelUp = users.awardXp(user, xp);
 
-    console.log(message);
-    console.log('levelUp', levelUp);
-    console.log('present xp', users.getXp(user));
-    console.log('xpToLevel', users.userXpToLevel(user))
-
     if (levelUp) {
       message = user + ' reached level ' + users.level(user) + '!';
       emitToRoom(room, 'levelUp', {
@@ -174,8 +169,6 @@ module.exports.registerAll = function(io, socket) {
       });
 
     }
-    // console.log('current xp ', users[user].xp);
-    // console.log('total xp needed to level', xpToLevel(users[user].level));
     serverMessage(message);
   };
 
