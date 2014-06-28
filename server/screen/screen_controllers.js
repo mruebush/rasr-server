@@ -1,6 +1,7 @@
 var Promise = require('bluebird');
 var sampleScreens = require('../buildWorld/sampleScreens');
 var enemyHandler = require('../enemy/enemy_controllers')
+var sampleEnemies = require('../buildWorld/sampleEnemies')
 var mongoose = require('mongoose');
 var Screen = mongoose.model('Screen');
 var helpers = require('./screen_helpers');
@@ -30,8 +31,12 @@ module.exports = {
     var currentObjectId = req.param('currentScreenId');
     // create new screen
     Screen.createAsync(newScreen)
+    // populate with two enemies
     .then(function(createdScreen) {
-      return helpers.addDirectionReference(direction, currentObjectId, createdScreen._id)
+      return enemyHandler.populateEnemy(sampleEnemies.enemyOnScreen1, createdScreen._id)
+    })
+    .then(function(createdScreenId) {
+      return helpers.addDirectionReference(direction, currentObjectId, createdScreenId)
     })
     // go around the horn, adding all necessary references
     .then(function(createdScreenId) {
