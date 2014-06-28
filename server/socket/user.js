@@ -1,3 +1,5 @@
+var Promise = require('bluebird');
+
 var users = {};
 var methods = {};
 
@@ -45,27 +47,22 @@ methods.others = function(username, room) {
 };
 
 methods.save = function(username, data) {
-  Player.findOneAndUpdate({
-    username: username
-  }, {
+  Player.findOneAndUpdateAsync({ username: username }, {
     x: data.x,
     y: data.y,
     mapId: data.room,
     level: data.level,
       xp: data.xp
-  }, null, function(){
-    console.log('save', arguments[1]);
-    console.log('error', arguments[0]);
-  });
+  })
 };
 
 methods.login = function(user) {
 
-  Player.findOneAsync({
+  return Player.findOneAsync({
     username: user
   }).then(function(result) {
-
     users[user] = {
+      username: result.username,
       room: result.mapId,
       // png: result.png,
       // speed: result.speed,
@@ -75,7 +72,9 @@ methods.login = function(user) {
       y: result.y
     };
 
-    console.log('loaded ', users[user]);
+    return new Promise(function (onResolved, onRejected) {
+      onResolved(users[user]);
+    });
 
   });
 };
@@ -115,23 +114,20 @@ methods.resetAll = function(username) {
 };
 
 methods.awardXp = function(username, xp) {
-
-  console.log('awarding xp', typeof xp);
   var message;
   var levelUp;
   var user = methods.get(username);
-  user.xp = user.xp + xp;
-  console.log('to user', user)
+  if (user) {
+    user.xp += xp;
 
-  if (user.xp >= methods.xpToLevel(user.level)) {
-
-    user.level++;
-    user.xp = 0;
-    methods.save(username, user);
-    levelUp = true;
-  } 
-
-  return levelUp;
+    if (user.xp >= methods.xpToLevel(user.level)) {
+      user.level++;
+      user.xp = 0;
+      methods.save(username, user);
+      user.levelUp = true;
+    } 
+  }
+  return user;
 };
 
 methods.level = function(username) {
@@ -155,26 +151,35 @@ methods.extend = function(username, properties) {
   var user = methods.get(username);
   properties = properties || {};
 
-  for (var key in user) {
-    user[key] = properties[key];
+  if (!user) {
+    methods.login(username)
+    .then(function(user) {
+      for (var key in properties) {
+        user[key] = properties[key];
+      }
+    })
+  } else {
+    for (var key in properties) {
+      user[key] = properties[key];
+    }
   }
 };
 
 methods.freeXp = function(username, xp) {
-    var user = methods.get(username);
-    user.xp += xp;
+  var user = methods.get(username);
+  user.xp += xp;
 
-    console.log("Awarded " + xp + " free xp to " + username);
+  console.log("Awarded " + xp + " free xp to " + username);
 
-    var message = user + ' was awarded ' + data.xp + ' free xp';
+  var message = user + ' was awarded ' + data.xp + ' free xp';
 
-    if (user.xp >= methods.xpToLevel(user.level)) {
-      user.level++;
-      user.xp = 0;
-      message = username + ' reached level ' + user.level; 
-    }
+  if (user.xp >= methods.xpToLevel(user.level)) {
+    user.level++;
+    user.xp = 0;
+    message = username + ' reached level ' + user.level; 
+  }
 
-    return message;
+  return message;
 };
 
 methods.userXpToLevel = function(username) {
