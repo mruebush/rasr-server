@@ -144,7 +144,6 @@ module.exports.registerAll = function(io, socket) {
     var message = users.freeXp(user, xp);
 
     serverMessage(message);
-    emitToAll('levelUp');
   };
 
   handlers.enemyDies = function(data) {
@@ -162,9 +161,6 @@ module.exports.registerAll = function(io, socket) {
 
     if (userData.levelUp) {
       message = user + ' reached level ' + users.level(user) + '!';
-      emitToRoom(room, 'levelUp', {
-        user: user
-      });
     }
     serverMessage(message);
     emitToRoom(room, 'addXP', {
