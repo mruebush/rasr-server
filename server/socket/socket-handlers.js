@@ -16,8 +16,8 @@ var rooms = {};
 var enemies = require('./enemy').methods;
 var users = require('./user').methods;
 
-var mongoose = require('mongoose'),
-    Enemy = mongoose.model('Enemy');
+var mongoose = require('mongoose');
+var Enemy = mongoose.model('Enemy');
 
 module.exports.registerAll = function(io, socket) {
 
@@ -34,21 +34,21 @@ module.exports.registerAll = function(io, socket) {
         for (var dbId in enemies.get(room)) {
           for (var id in enemies.get(room, dbId)){
             if (!enemies.isAttacking(room, dbId, id)) {
-              nums.push({
+              nums[id] = {
                 dir: Math.floor(Math.random() * 4),
                 passive: true
-              });
+              };
             } 
             else {
-              nums.push({
+              nums[id] = {
                 dir: void 0,
                 passive: false
-              });
+              };
             }
           }
         }
         emitToRoom(room, 'move enemies',{
-          param: 'move dem enemies!',
+          param: 'move the enemies!',
           nums: nums 
         });
       }
@@ -146,15 +146,32 @@ module.exports.registerAll = function(io, socket) {
     serverMessage(message);
   };
 
+  handlers.regenerateEnemy = function(room, dbId, enemyId, toRegenerate) {
+    // timeToRegenerate in DB is in seconds
+    setTimeout(function() {
+      enemies.regenerate(room, dbId, enemyId, toRegenerate);
+      toRegenerate.room = room;
+      toRegenerate.dbId = dbId;
+      toRegenerate.enemyId = enemyId;
+      emitToRoom(room, 'revive enemy', toRegenerate);
+    }, toRegenerate.timeToRegenerate * 1000);
+  }
+
   handlers.enemyDies = function(data) {
-    var room = data.mapId;
+    var room = data.room;
     var user = data.user;
     var dbId = data._id;
     var enemyId = data.enemy;
     var xp = data.xp;
 
-    enemies.delete(room, dbId, enemyId);
-    emitToRoom(room, 'derenderEnemy', data);
+    var toRegenerate = enemies.get(room, dbId, enemyId);
+    // simply regenerate with health = 5 and position = last position at this point and not attacking
+    toRegenerate.health = 5;
+    delete toRegenerate.attacking;
+    handlers.regenerateEnemy(room, dbId, enemyId, toRegenerate);
+
+    enemies.killEnemy(room, dbId, enemyId);
+    emitToRoom(room, 'derender enemy', data);
 
     var message = user + ' has slain a ' + data.enemyName + ' for ' + xp + ' exp!';
     var userData = users.awardXp(user, xp);
@@ -175,10 +192,13 @@ module.exports.registerAll = function(io, socket) {
     var user = data.user;
 
     console.log(user + ' damages enemy ' + enemyId + ' in ' + room);
-    
 
-    enemies.damage(room, dbId, enemyId);
-    enemies.attack(room, dbId, enemyId, users.get(user));
+    if (enemies.damage(room, dbId, enemyId)) {
+      // enemy dies
+      handlers.enemyDies(data);
+    } else {
+      enemies.attack(room, dbId, enemyId, users.get(user));
+    }
 
     emitToRoom(room, 'damageEnemy', {
       serverId: data.enemy
@@ -262,7 +282,7 @@ module.exports.registerAll = function(io, socket) {
         var enemyId = creatures[i].id;
 
         getEnemyData(enemyId).then(function(result){
-
+          console.log('ENEMY DATA RECEIVED', result);
           enemies.pushInfo(enemies.get(room, enemyId), {
             health: result.health,
             name: result.name,
@@ -270,6 +290,7 @@ module.exports.registerAll = function(io, socket) {
             png: result.png,
             speed: result.speed,
             xp: result.xp,
+            timeToRegenerate: result.timeToRegenerate,
             attacking: false
           });
 

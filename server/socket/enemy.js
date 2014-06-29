@@ -73,9 +73,13 @@ methods.get = function(room, dbId, enemyId) {
   }
 };
 
-methods.delete = function(room, dbId, enemyId) {
+methods.killEnemy = function(room, dbId, enemyId) {
   delete enemies[room][dbId][enemyId];
 };
+
+methods.regenerate = function(room, dbId, enemyId, toRegenerate) {
+  enemies[room][dbId][enemyId] = toRegenerate;
+}
 
 methods.initRoom = function(room) {
   enemies[room] = {};
@@ -113,7 +117,7 @@ methods.initEnemyId = function(room, dbId, enemyId) {
 methods.damage = function(room, dbId, enemyId) {
   var enemy = methods.get(room, dbId, enemyId);
   if (enemy) {
-    enemy.health--;
+    return --enemy.health === 0
   }
 };
 
@@ -138,17 +142,18 @@ methods.exist = function(room, dbId, enemyId) {
 
 methods.pushInfo = function(enemies, data) {
 
-    for (var key in enemies) {
-      enemies[key].health = data.health;
-      enemies[key].name = data.name;
-      enemies[key]._id = data._id;
-      enemies[key].png = data.png;
-      enemies[key].speed = data.speed;
-      enemies[key].xp = data.xp;
-      enemies[key].attacking = data.attacking;
-     }
+  for (var key in enemies) {
+    enemies[key].health = data.health;
+    enemies[key].name = data.name;
+    enemies[key]._id = data._id;
+    enemies[key].png = data.png;
+    enemies[key].speed = data.speed;
+    enemies[key].xp = data.xp;
+    enemies[key].timeToRegenerate = data.timeToRegenerate;
+    enemies[key].attacking = data.attacking;
+   }
 
-  };
+};
 
 methods.isAttacking = function(room, dbId, enemyId) {
   return !!enemies[room][dbId][enemyId].attacking;
@@ -156,41 +161,41 @@ methods.isAttacking = function(room, dbId, enemyId) {
 
 methods.calcDirection = function(enemy) {
 
-    var enemyX = enemy.position[0];
-    var enemyY = enemy.position[1];
+  var enemyX = enemy.position[0];
+  var enemyY = enemy.position[1];
 
-    var playerX = enemy.attacking.x;
-    var playerY = enemy.attacking.y;
+  var playerX = enemy.attacking.x;
+  var playerY = enemy.attacking.y;
 
-    var eps = 40;
+  var eps = 40;
 
-    // directions:
-    // 0 -> up
-    // 1 -> down
-    // 2 -> left
-    // 3 -> right
+  // directions:
+  // 0 -> up
+  // 1 -> down
+  // 2 -> left
+  // 3 -> right
 
-    var xdiff = playerX - enemyX;
-    var ydiff = playerY - enemyY;
+  var xdiff = playerX - enemyX;
+  var ydiff = playerY - enemyY;
 
-    if (Math.abs(xdiff) > eps) {
+  if (Math.abs(xdiff) > eps) {
 
-      if (xdiff > 0) {
-        return 3;
-      } else {
-        return 2;
-      }
-
+    if (xdiff > 0) {
+      return 3;
     } else {
-
-      if (ydiff > 0) {
-        return 1;
-      } else {
-        return 0;
-      }
-
+      return 2;
     }
 
-  };
+  } else {
+
+    if (ydiff > 0) {
+      return 1;
+    } else {
+      return 0;
+    }
+
+  }
+
+};
 
 module.exports.methods = methods;
