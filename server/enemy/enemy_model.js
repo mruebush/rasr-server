@@ -6,7 +6,8 @@ var EnemySchema = new Schema({
   png: String,
   speed: {type: Number, default: 200},
   health: Number,
-  xp: {type: Number, default: 1}
+  xp: {type: Number, default: 1},
+  timeToRegenerate: {type: Number, default: 10} // in seconds
 });
 
 module.exports = mongoose.model('Enemy', EnemySchema);
