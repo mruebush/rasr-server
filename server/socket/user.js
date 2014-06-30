@@ -52,7 +52,8 @@ methods.save = function(username, data) {
     y: data.y,
     mapId: data.room,
     level: data.level,
-      xp: data.xp
+    health: data.health,
+    xp: data.xp
   })
 };
 
@@ -68,6 +69,7 @@ methods.login = function(user) {
       // speed: result.speed,
       xp: +result.xp,
       level: +result.level,
+      health: +result.health,
       x: result.x,
       y: result.y
     };
@@ -117,15 +119,17 @@ methods.awardXp = function(username, xp) {
   var message;
   var levelUp;
   var user = methods.get(username);
+  user.levelUp = false;
   if (user) {
     user.xp += xp;
 
     if (user.xp >= methods.xpToLevel(user.level)) {
       user.level++;
       user.xp = 0;
-      methods.save(username, user);
       user.levelUp = true;
-    } 
+    }
+
+    methods.save(username, user);
   }
   return user;
 };
