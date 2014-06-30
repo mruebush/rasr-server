@@ -240,9 +240,6 @@ module.exports.registerAll = function(io, socket) {
     console.log(user + ' joined ' + room + ' in ' + x + ',' + y);
 
     if (creatures.length === 0) {
-
-      console.log('no enemies in room');
-
       emitToRoom(room, room, {
         user: user,
         others: users.others(user, room),
@@ -251,9 +248,6 @@ module.exports.registerAll = function(io, socket) {
       });
 
     } else if (enemies.exist(room)) {
-
-      console.log('got enemies in memory.. ', enemies.get(room));
-
       emitToRoom(room, room, {
         user: user,
         others: users.others(user, room),
@@ -282,7 +276,6 @@ module.exports.registerAll = function(io, socket) {
         var enemyId = creatures[i].id;
 
         getEnemyData(enemyId).then(function(result){
-          console.log('ENEMY DATA RECEIVED', result);
           enemies.pushInfo(enemies.get(room, enemyId), {
             health: result.health,
             name: result.name,
