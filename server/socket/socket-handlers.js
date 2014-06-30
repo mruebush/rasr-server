@@ -175,9 +175,11 @@ module.exports.registerAll = function(io, socket) {
     var message = user + ' has slain a ' + data.enemyName + ' for ' + xp + ' exp!';
     var userData = users.awardXp(user, xp);
 
-    if (userData.levelUp) {
+
+    if (userData && userData.levelUp) {
       message = user + ' reached level ' + users.level(user) + '!';
     }
+
     serverMessage(message);
     emitToRoom(room, 'addXP', {
       user: userData
