@@ -119,8 +119,8 @@ methods.awardXp = function(username, xp) {
   var message;
   var levelUp;
   var user = methods.get(username);
-  user.levelUp = false;
   if (user) {
+    user.levelUp = false;
     user.xp += xp;
 
     if (user.xp >= methods.xpToLevel(user.level)) {

@@ -113,21 +113,27 @@ module.exports.registerAll = function(io, socket) {
     if (enemies.exist(room, dbId, enemyId)) {
 
       var enemy = enemies.get(room, dbId, enemyId);
+      
+      if (enemy) {
+        enemy.position[0] = data.x;
+        enemy.position[1] = data.y;
 
-      enemy.position[0] = data.x;
-      enemy.position[1] = data.y;
+        if (enemy.attacking) {
+          if (distance([data.x, data.y],[enemy.attacking.x, enemy.attacking.y]) > 37) {
 
-      if (enemy.attacking) {
-        if (distance([data.x, data.y],[enemy.attacking.x, enemy.attacking.y]) > 37) {
-
-          var num = enemies.calcDirection(enemy);
-          emitToRoom(room, 'enemyMoving', {
-            dir: num,
-            dbId: dbId,
-            serverId: enemyId
-          });
+            var num = enemies.calcDirection(enemy);
+            emitToRoom(room, 'enemyMoving', {
+              dir: num,
+              dbId: dbId,
+              serverId: enemyId
+            });
+          }
         }
+
+        
       }
+
+
 
     }
   };
@@ -175,13 +181,15 @@ module.exports.registerAll = function(io, socket) {
     var message = user + ' has slain a ' + data.enemyName + ' for ' + xp + ' exp!';
     var userData = users.awardXp(user, xp);
 
-    if (userData.levelUp) {
+
+    if (userData && userData.levelUp) {
       message = user + ' reached level ' + users.level(user) + '!';
+      serverMessage(message);
+      emitToRoom(room, 'addXP', {
+        user: userData
+      });
     }
-    serverMessage(message);
-    emitToRoom(room, 'addXP', {
-      user: userData
-    });
+
   };
 
   handlers.damageEnemy = function(data) {
@@ -236,7 +244,7 @@ module.exports.registerAll = function(io, socket) {
       y: y
     });
 
-    console.log(user + ' joined ' + room + ' in ' + x + ',' + y);
+    // console.log(user + ' joined ' + room + ' in ' + x + ',' + y);
 
     if (creatures.length === 0) {
       emitToRoom(room, room, {
@@ -315,6 +323,8 @@ module.exports.registerAll = function(io, socket) {
   };
 
   handlers.move = function(data) {
+
+
     var user = data.user;
     var room = data.room;
     var dir = data.dir;
@@ -322,6 +332,7 @@ module.exports.registerAll = function(io, socket) {
     var x = data.x;
     var y = data.y;
 
+    // console.log(user + ' moves to ' + x + ',' + y);
     var set = users.setPosition(user, [x, y]);
 
     if (set) {
