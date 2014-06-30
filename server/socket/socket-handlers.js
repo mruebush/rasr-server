@@ -62,7 +62,6 @@ module.exports.registerAll = function(io, socket) {
   };
 
   var serverMessage = function(message) {
-    message = '[' + new Date().toDateString() + '] ' + message;
     io.emit('message', {
       user: 'Overlord',
       message: message
