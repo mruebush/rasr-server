@@ -1,6 +1,7 @@
 var Promise = require('bluebird');
 var sampleScreens = require('../buildWorld/sampleScreens');
 var enemyHandler = require('../enemy/enemy_controllers')
+var sampleEnemies = require('../buildWorld/sampleEnemies')
 var mongoose = require('mongoose');
 var Screen = mongoose.model('Screen');
 var helpers = require('./screen_helpers');
@@ -28,26 +29,26 @@ module.exports = {
     var direction = req.param('direction');
     var newScreen = sampleScreens.template;
     var currentObjectId = req.param('currentScreenId');
-
-
-      res.send({success: 'World Created'}, 200);
-    
-      console.log(newScreen);
     // create new screen
     Screen.createAsync(newScreen)
+    // populate with two enemies
     .then(function(createdScreen) {
-      return helpers.addDirectionReference(direction, currentObjectId, createdScreen._id)
+      return enemyHandler.populateEnemy(sampleEnemies.enemyOnScreen1, createdScreen._id)
+    })
+    .then(function(createdScreenId) {
+      return helpers.addDirectionReference(direction, currentObjectId, createdScreenId)
     })
     // go around the horn, adding all necessary references
     .then(function(createdScreenId) {
-      return helpers.placementHelper(currentObjectId, createdScreenId, direction, adjacentDirections[direction]);
+      return helpers.placementHelper(currentObjectId, createdScreenId, direction, helpers.adjacentDirections[direction]);
     })
     // when not creating world
     .then(function() {
+      console.log('new world created');
       res.send({success: 'World Created'}, 200);
     })
     .catch(function(err) {
-      console.log('world probably created already');
+      console.log('world probably existed already');
       helpers.handleError(err, res);
     });
   },
@@ -59,7 +60,6 @@ module.exports = {
       res.send(foundScreen);
     })
     .catch(function(err) {
-      console.log('didnt find it', err);
       helpers.handleError(err, res);
     });
   },
@@ -80,15 +80,13 @@ module.exports = {
     var map = JSON.parse(req.body.map);
     delete map._id;
     var screenId = req.param('screenId');
-    console.log('updating MAP: ', typeof map);
-    // JSON.parse(map);
 
     Screen.findByIdAndUpdate(screenId, map, function(err, result) {
       if (err) {
-        console.log('You fucked uppp', err);
+        console.log('Error', err);
         res.send(500);
       } else {
-        console.log('Updated map');
+        console.log('Map updated');
         res.send(200);
       }
     });

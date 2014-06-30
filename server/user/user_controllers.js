@@ -14,7 +14,6 @@ module.exports = {
    */
 
   create: function (req, res, next) {
-    console.log('inside create');
     var newUser = new User(req.body);
     newUser.provider = 'local';
     newUser.save(function(err, user) {
@@ -26,7 +25,6 @@ module.exports = {
       /**
        * Create new player with random mapId
        */
-      console.log(req.body);
       // update player with new mapId
       return Screen.findAsync()
       .then(function(screens) {
@@ -39,13 +37,11 @@ module.exports = {
 
         newPlayer.save(function(err, result) {
           if (err) {
-            console.log('ERROR with player', err);
             return res.json(400, err);
           }
 
           var tokenSecret = process.env.SECRET_JWT || 'secret'
           var token = jwt.sign({ username: req.body.name }, tokenSecret, { expiresInMinutes: 60 * 24 * 365 });
-          console.log(req.body.name);
           return res.json({
             token: token,
             name: req.body.name

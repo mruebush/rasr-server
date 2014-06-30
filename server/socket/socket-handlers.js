@@ -7,21 +7,17 @@ var handlers = {};
 
 // var io;
 
-
-
 // sample rooms object:
 // { room1: 5, room2: 0, ... }
 var rooms = {}; 
-
-
 
 // var xpToLevel = require('./level').level;
 
 var enemies = require('./enemy').methods;
 var users = require('./user').methods;
 
-var mongoose = require('mongoose'),
-    Enemy = mongoose.model('Enemy');
+var mongoose = require('mongoose');
+var Enemy = mongoose.model('Enemy');
 
 module.exports.registerAll = function(io, socket) {
 
@@ -38,21 +34,21 @@ module.exports.registerAll = function(io, socket) {
         for (var dbId in enemies.get(room)) {
           for (var id in enemies.get(room, dbId)){
             if (!enemies.isAttacking(room, dbId, id)) {
-              nums.push({
+              nums[id] = {
                 dir: Math.floor(Math.random() * 4),
                 passive: true
-              });
+              };
             } 
             else {
-              nums.push({
+              nums[id] = {
                 dir: void 0,
                 passive: false
-              });
+              };
             }
           }
         }
         emitToRoom(room, 'move enemies',{
-          param: 'move dem enemies!',
+          param: 'move the enemies!',
           nums: nums 
         });
       }
@@ -82,8 +78,10 @@ module.exports.registerAll = function(io, socket) {
 
   handlers.login = function(user) {
     socket.user = user;
-    users.login(user);
-    serverMessage(user + ' has joined the game!');
+    users.login(user)
+    .then(function() {
+      serverMessage(user + ' has joined the game!');
+    });
   };
 
   handlers.disconnect = function() {
@@ -145,44 +143,61 @@ module.exports.registerAll = function(io, socket) {
     var message = users.freeXp(user, xp);
 
     serverMessage(message);
-    emitToAll('levelUp');
   };
 
+  handlers.regenerateEnemy = function(room, dbId, enemyId, toRegenerate) {
+    // timeToRegenerate in DB is in seconds
+    setTimeout(function() {
+      enemies.regenerate(room, dbId, enemyId, toRegenerate);
+      toRegenerate.room = room;
+      toRegenerate.dbId = dbId;
+      toRegenerate.enemyId = enemyId;
+      emitToRoom(room, 'revive enemy', toRegenerate);
+    }, toRegenerate.timeToRegenerate * 1000);
+  }
+
   handlers.enemyDies = function(data) {
-    var room = data.mapId;
+    var room = data.room;
     var user = data.user;
     var dbId = data._id;
     var enemyId = data.enemy;
     var xp = data.xp;
 
-    enemies.delete(room, dbId, enemyId);
-    emitToRoom(room, 'derenderEnemy', data);
+    var toRegenerate = enemies.get(room, dbId, enemyId);
+    // simply regenerate with health = 5 and position = last position at this point and not attacking
+    toRegenerate.health = 5;
+    delete toRegenerate.attacking;
+    handlers.regenerateEnemy(room, dbId, enemyId, toRegenerate);
+
+    enemies.killEnemy(room, dbId, enemyId);
+    emitToRoom(room, 'derender enemy', data);
 
     var message = user + ' has slain a ' + data.enemyName + ' for ' + xp + ' exp!';
-    var levelUp = users.awardXp(user, xp);
+    var userData = users.awardXp(user, xp);
 
-    if (levelUp) {
+    if (userData.levelUp) {
       message = user + ' reached level ' + users.level(user) + '!';
-      emitToRoom(room, 'levelUp', {
-        user: user
-      });
-
     }
     serverMessage(message);
+    emitToRoom(room, 'addXP', {
+      user: userData
+    });
   };
 
   handlers.damageEnemy = function(data) {
-    // console.log('data', data)
     var room = data.room;
     var dbId = data._id;
     var enemyId = data.enemy;
     var user = data.user;
 
     console.log(user + ' damages enemy ' + enemyId + ' in ' + room);
-    
 
-    enemies.damage(room, dbId, enemyId);
-    enemies.attack(room, dbId, enemyId, users.get(user));
+    if (enemies.damage(room, dbId, enemyId)) {
+      // enemy dies
+      handlers.enemyDies(data);
+    } else {
+      enemies.attack(room, dbId, enemyId, users.get(user));
+    }
 
     emitToRoom(room, 'damageEnemy', {
       serverId: data.enemy
@@ -203,35 +218,27 @@ module.exports.registerAll = function(io, socket) {
   };
 
   handlers.join = function(data) {
-
     var room = data.mapId;
     var user = data.user;
     var x = data.x;
     var y = data.y;
     var creatures = data.enemies;
 
-    users.getXp(user);
-
     socket.join(room);
 
     rooms[room] && rooms[room]++;
     rooms[room] = rooms[room] || 1;
 
-
-    users.extend(users.get(user), {
+    users.extend(user, {
       name: user,
       room: room,
       x: x,
       y: y
     });
 
-
     console.log(user + ' joined ' + room + ' in ' + x + ',' + y);
 
     if (creatures.length === 0) {
-
-      console.log('no enemies in room');
-
       emitToRoom(room, room, {
         user: user,
         others: users.others(user, room),
@@ -240,9 +247,6 @@ module.exports.registerAll = function(io, socket) {
       });
 
     } else if (enemies.exist(room)) {
-
-      console.log('got enemies in memory.. ', enemies.get(room));
-
       emitToRoom(room, room, {
         user: user,
         others: users.others(user, room),
@@ -252,21 +256,14 @@ module.exports.registerAll = function(io, socket) {
       });
 
     } else {
-
-      console.log('querying db for enemies');
-      // allEnemies[room] = {};
       enemies.initRoom(room);
       for (var i = 0, _len = creatures.length; i < _len; i++) {
-
-        // console.log('crash', data.creatures);
         var dbId = data.enemies[i].id;
         enemies.initDbId(room, dbId);
 
         for (var j = 0, _len2 = creatures[i].count; j < _len2; j++) {
-          // allEnemies[room][dbId][j] = {};
           enemies.initEnemyId(room, dbId, j);
           enemies.setPosition(room, dbId, j, data.positions[dbId][j]);
-          // allEnemies[room][dbId][j].position = data.positions[dbId][j];
         }
       }
 
@@ -278,7 +275,6 @@ module.exports.registerAll = function(io, socket) {
         var enemyId = creatures[i].id;
 
         getEnemyData(enemyId).then(function(result){
-
           enemies.pushInfo(enemies.get(room, enemyId), {
             health: result.health,
             name: result.name,
@@ -286,6 +282,7 @@ module.exports.registerAll = function(io, socket) {
             png: result.png,
             speed: result.speed,
             xp: result.xp,
+            timeToRegenerate: result.timeToRegenerate,
             attacking: false
           });
 
