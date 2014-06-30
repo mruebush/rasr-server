@@ -181,10 +181,6 @@ module.exports.registerAll = function(io, socket) {
     var message = user + ' has slain a ' + data.enemyName + ' for ' + xp + ' exp!';
     var userData = users.awardXp(user, xp);
 
-
-    console.log(userData)
-
-
     if (userData) {
       if (userData.levelUp) {
         message = user + ' reached level ' + users.level(user) + '!';
@@ -202,8 +198,6 @@ module.exports.registerAll = function(io, socket) {
     var dbId = data._id;
     var enemyId = data.enemy;
     var user = data.user;
-
-    console.log(user + ' damages enemy ' + enemyId + ' in ' + room);
 
     if (enemies.damage(room, dbId, enemyId)) {
       // enemy dies
