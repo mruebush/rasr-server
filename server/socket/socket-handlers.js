@@ -113,7 +113,7 @@ module.exports.registerAll = function(io, socket) {
     if (enemies.exist(room, dbId, enemyId)) {
 
       var enemy = enemies.get(room, dbId, enemyId);
-      
+
       if (enemy) {
         enemy.position[0] = data.x;
         enemy.position[1] = data.y;
@@ -182,9 +182,14 @@ module.exports.registerAll = function(io, socket) {
     var userData = users.awardXp(user, xp);
 
 
-    if (userData && userData.levelUp) {
-      message = user + ' reached level ' + users.level(user) + '!';
-      serverMessage(message);
+    console.log(userData)
+
+
+    if (userData) {
+      if (userData.levelUp) {
+        message = user + ' reached level ' + users.level(user) + '!';
+        serverMessage(message);
+      }
       emitToRoom(room, 'addXP', {
         user: userData
       });
