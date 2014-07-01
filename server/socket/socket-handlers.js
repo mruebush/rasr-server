@@ -84,7 +84,7 @@ module.exports.registerAll = function(io, socket) {
   };
 
   handlers.disconnect = function() {
-    console.log('a wild troll disappears');
+    //console.log('a wild troll disappears');
     users.logout({
       user: socket.user
     });
@@ -236,7 +236,7 @@ module.exports.registerAll = function(io, socket) {
     rooms[room] && rooms[room]++;
     rooms[room] = rooms[room] || 1;
 
-    console.log('joined', rooms[room]);
+    //console.log('joined', rooms[room]);
 
     if (rooms[room] === 1) {
       // var passiveEnemyTimer = setInterval(movePassiveEnemies, 2500);
@@ -326,7 +326,7 @@ module.exports.registerAll = function(io, socket) {
     rooms[room] && rooms[room]--;
 
     if (rooms[room] === 0) {
-      console.log('cleared interval');
+      //console.log('cleared interval');
       clearInterval(timers[room]);
     }
 
@@ -337,7 +337,7 @@ module.exports.registerAll = function(io, socket) {
     enemies.unattack(users.get(user), room);
 
     socket.leave(room);
-    console.log(user + ' left ' + room, rooms[room]);
+    //console.log(user + ' left ' + room, rooms[room]);
   };
 
   handlers.move = function(data) {
@@ -365,7 +365,7 @@ module.exports.registerAll = function(io, socket) {
     var message = data.message.message;
     var user = data.message.user;
 
-    console.log('recieved message ' + message);
+    //console.log('recieved message ' + message);
 
     emitToAll('message', {
       message: message,
