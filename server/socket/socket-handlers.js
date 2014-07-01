@@ -97,6 +97,7 @@ module.exports.registerAll = function(io, socket) {
   handlers.gameOver = function(data) {
     var room = data.room;
     var user = data.user;
+    console.log('game over!!!!', data)
 
     users.gameOver(user, data);
     emitToRoom(room, 'gameOver', {
@@ -340,8 +341,6 @@ module.exports.registerAll = function(io, socket) {
   };
 
   handlers.move = function(data) {
-
-
     var user = data.user;
     var room = data.room;
     var dir = data.dir;
@@ -373,6 +372,7 @@ module.exports.registerAll = function(io, socket) {
       user: user
     });
   };
+
 
 };
 
