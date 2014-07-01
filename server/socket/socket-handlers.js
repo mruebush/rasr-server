@@ -9,7 +9,8 @@ var handlers = {};
 
 // sample rooms object:
 // { room1: 5, room2: 0, ... }
-var rooms = {}; 
+var rooms = {};
+var timers = {}; 
 
 // var xpToLevel = require('./level').level;
 
@@ -25,12 +26,12 @@ module.exports.registerAll = function(io, socket) {
     return Enemy.findByIdAsync(enemyId);
   };
 
-  var movePassiveEnemies = function() {
+  var movePassiveEnemies = function(mapId) {
 
     var nums = [];
 
     for (var room in rooms) {
-      if (rooms[room] && enemies.exist(room)) {
+      if (rooms[room] && enemies.exist(room) && mapId === room) {
         for (var dbId in enemies.get(room)) {
           for (var id in enemies.get(room, dbId)){
             if (!enemies.isAttacking(room, dbId, id)) {
@@ -54,8 +55,6 @@ module.exports.registerAll = function(io, socket) {
       }
     }
   };
-
-  var passiveEnemyTimer = setInterval(movePassiveEnemies, 2500);
 
   var distance = function(enemy, player) {
     return Math.sqrt(Math.pow(enemy[0] - player[0], 2) + Math.pow(enemy[1] - player[1], 2));
@@ -236,6 +235,16 @@ module.exports.registerAll = function(io, socket) {
     rooms[room] && rooms[room]++;
     rooms[room] = rooms[room] || 1;
 
+    console.log('joined', rooms[room]);
+
+    if (rooms[room] === 1) {
+      // var passiveEnemyTimer = setInterval(movePassiveEnemies, 2500);
+      var passiveEnemyTimer = setInterval(function() {
+        movePassiveEnemies(room);
+      }, 2500);
+      timers[room] = passiveEnemyTimer;
+    }
+
     users.extend(user, {
       name: user,
       room: room,
@@ -311,6 +320,15 @@ module.exports.registerAll = function(io, socket) {
   handlers.leave = function(data) {  
     var user = data.user;
     var room = data.mapId;
+
+
+    rooms[room] && rooms[room]--;
+
+    if (rooms[room] === 0) {
+      console.log('cleared interval');
+      clearInterval(timers[room]);
+    }
+
     emitToRoom(room, 'leave', {
       user: user
     });
@@ -318,7 +336,7 @@ module.exports.registerAll = function(io, socket) {
     enemies.unattack(users.get(user), room);
 
     socket.leave(room);
-    console.log(user + ' left ' + room);
+    console.log(user + ' left ' + room, rooms[room]);
   };
 
   handlers.move = function(data) {
