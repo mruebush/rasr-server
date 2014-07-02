@@ -42,7 +42,7 @@ module.exports = {
 
           var tokenSecret = process.env.SECRET_JWT || 'secret'
           var token = jwt.sign({ username: req.body.name }, tokenSecret, { expiresInMinutes: 60 * 24 * 365 });
-          return res.json({
+          return res.json(201, {
             token: token,
             name: req.body.name
           });
