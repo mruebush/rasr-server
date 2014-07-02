@@ -95,9 +95,12 @@ methods.logout = function(data) {
 
 methods.gameOver = function(username, data) {
   var user = methods.get(username);
-  user.xp *= 0.2;
-  methods.save(username, data);
+  user.xp *= Math.floor(0.2);
+  user.mapId = data.room
+  user.health = 100
+  methods.save(username, user);
 };
+
 
 methods.setPosition = function(username, position) {
   var user = methods.get(username);
